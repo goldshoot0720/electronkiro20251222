@@ -205,7 +205,8 @@ class ContentfulManager {
                 price: entry.fields.price ? `NT$ ${entry.fields.price}` : 'NT$ 0',
                 nextPayment: entry.fields.nextdate ? this.formatDate(entry.fields.nextdate) : '未設定',
                 daysLeft: this.calculateDaysLeft(entry.fields.nextdate),
-                status: this.getSubscriptionStatus(entry.fields.nextdate)
+                status: this.getSubscriptionStatus(entry.fields.nextdate),
+                contentfulId: entry.sys.id // 保存 Contentful ID
             }));
             
         } catch (error) {
@@ -240,7 +241,8 @@ class ContentfulManager {
                 price: 'NT$ 0', // Contentful 中沒有價格欄位
                 status: '良好',
                 expiry: entry.fields.todate ? this.formatDate(entry.fields.todate) : '未設定',
-                daysLeft: this.calculateDaysLeft(entry.fields.todate)
+                daysLeft: this.calculateDaysLeft(entry.fields.todate),
+                contentfulId: entry.sys.id // 保存 Contentful ID
             }));
             
         } catch (error) {

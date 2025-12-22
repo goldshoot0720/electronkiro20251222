@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>彈跳窗修復完整測試</title>
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="src/styles/components.css">
+    <link rel="stylesheet" href="src/styles/dashboard.css">
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+        .test-section {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 14px;
+            width: 100%;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button.success {
+            background: #28a745;
+        }
+        .test-button.warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        .fix-summary {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .fix-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+        .fix-item .icon {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 彈跳窗修復完整測試</h1>
+        
+        <div class="fix-summary">
+            <h2>✅ 修復摘要</h2>
+            <div class="fix-item">
+                <span class="icon">🍎</span>
+                <span>食品新增彈跳窗 - 修復完成</span>
+            </div>
+            <div class="fix-item">
+                <span class="icon">📊</span>
+                <span>訂閱新增彈跳窗 - 修復完成</span>
+            </div>
+            <div class="fix-item">
+                <span class="icon">⚡</span>
+                <span>異步處理 - 正確等待操作完成</span>
+            </div>
+            <div class="fix-item">
+                <span class="icon">🔄</span>
+                <span>載入狀態 - 添加視覺反饋</span>
+            </div>
+            <div class="fix-item">
+                <span class="icon">🎯</span>
+                <span>事件處理 - 移除內聯屬性，使用事件監聽器</span>
+            </div>
+        </div>
+
+        <div class="test-grid">
+            <div class="test-section">
+                <h3>🍎 食品管理測試</h3>
+                <button class="test-button" onclick="testFoodForm()">測試新增食品表單</button>
+                <button class="test-button" onclick="testFoodSubmission()">測試食品提交流程</button>
+                <button class="test-button warning" onclick="testFoodError()">測試錯誤處理</button>
+                <div id="food-test-results"></div>
+            </div>
+
+            <div class="test-section">
+                <h3>📊 訂閱管理測試</h3>
+                <button class="test-button" onclick="testSubscriptionForm()">測試新增訂閱表單</button>
+                <button class="test-button" onclick="testSubscriptionSubmission()">測試訂閱提交流程</button>
+                <button class="test-button warning" onclick="testSubscriptionError()">測試錯誤處理</button>
+                <div id="subscription-test-results"></div>
+            </div>
+        </div>
+
+        <div class="test-section" style="margin-top: 30px;">
+            <h3>🔍 系統狀態檢查</h3>
+            <button class="test-button" onclick="checkSystemStatus()">檢查系統狀態</button>
+            <button class="test-button success" onclick="runAllTests()">執行完整測試</button>
+            <div id="system-status"></div>
+        </div>
+
+        <div class="test-section" style="margin-top: 30px;">
+            <h3>📋 測試結果</h3>
+            <div id="test-summary"></div>
+        </div>
+    </div>
+
+    <!-- 載入必要的 JavaScript 文件 -->
+    <script src="src/js/contentfulManager.js"></script>
+    <script src="src/js/crudManager.js"></script>
+    <script src="src/js/songManager.js"></script>
+    <script src="src/js/imageManager.js"></script>
+    <script src="src/js/videoManager.js"></script>
+    <script src="src/js/components.js"></script>
+    <script src="src/js/dashboardManager.js"></script>
+    <script src="src/js/app.js"></script>
+
+    <script>
+        let testResults = {
+            food: { form: false, submission: false, error: false },
+            subscription: { form: false, submission: false, error: false },
+            system: false
+        };
+
+        // 食品測試函數
+        function testFoodForm() {
+            const results = document.getElementById('food-test-results');
+            results.innerHTML = '<div class="status info">正在測試食品表單顯示...</div>';
+            
+            try {
+                if (typeof app !== 'undefined' && app.showFoodForm) {
+                    app.showFoodForm();
+                    results.innerHTML = '<div class="status success">✅ 食品表單顯示成功！</div>';
+                    testResults.food.form = true;
+                } else {
+                    results.innerHTML = '<div class="status error">❌ App 或 showFoodForm 函數未找到</div>';
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ 錯誤: ${error.message}</div>`;
+            }
+            updateTestSummary();
+        }
+
+        function testFoodSubmission() {
+            const results = document.getElementById('food-test-results');
+            results.innerHTML = '<div class="status info">正在測試食品提交流程...</div>';
+            
+            try {
+                const testData = {
+                    name: '測試食品 - ' + new Date().toLocaleTimeString(),
+                    brand: '測試品牌',
+                    price: 'NT$ 100',
+                    status: '良好',
+                    expiry: '2025-12-31'
+                };
+                
+                if (typeof app !== 'undefined' && app.crudManager) {
+                    app.crudManager.createFood(testData).then(result => {
+                        if (result.success) {
+                            results.innerHTML = '<div class="status success">✅ 食品提交測試成功！</div>';
+                            testResults.food.submission = true;
+                        } else {
+                            results.innerHTML = `<div class="status error">❌ 食品提交失敗: ${result.message}</div>`;
+                        }
+                        updateTestSummary();
+                    }).catch(error => {
+                        results.innerHTML = `<div class="status error">❌ 食品提交錯誤: ${error.message}</div>`;
+                        updateTestSummary();
+                    });
+                } else {
+                    results.innerHTML = '<div class="status error">❌ CRUD 管理器未初始化</div>';
+                    updateTestSummary();
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ 錯誤: ${error.message}</div>`;
+                updateTestSummary();
+            }
+        }
+
+        function testFoodError() {
+            const results = document.getElementById('food-test-results');
+            results.innerHTML = '<div class="status warning">正在測試食品錯誤處理...</div>';
+            
+            try {
+                // 測試空數據提交
+                const invalidData = { name: '', brand: '', price: '', status: '', expiry: '' };
+                
+                if (typeof app !== 'undefined' && app.crudManager) {
+                    app.crudManager.createFood(invalidData).then(result => {
+                        if (!result.success) {
+                            results.innerHTML = '<div class="status success">✅ 錯誤處理正常！正確拒絕無效數據</div>';
+                            testResults.food.error = true;
+                        } else {
+                            results.innerHTML = '<div class="status warning">⚠️ 錯誤處理可能需要改進</div>';
+                        }
+                        updateTestSummary();
+                    }).catch(error => {
+                        results.innerHTML = '<div class="status success">✅ 錯誤處理正常！捕獲到錯誤</div>';
+                        testResults.food.error = true;
+                        updateTestSummary();
+                    });
+                } else {
+                    results.innerHTML = '<div class="status error">❌ CRUD 管理器未初始化</div>';
+                    updateTestSummary();
+                }
+            } catch (error) {
+                results.innerHTML = '<div class="status success">✅ 錯誤處理正常！捕獲到錯誤</div>';
+                testResults.food.error = true;
+                updateTestSummary();
+            }
+        }
+
+        // 訂閱測試函數
+        function testSubscriptionForm() {
+            const results = document.getElementById('subscription-test-results');
+            results.innerHTML = '<div class="status info">正在測試訂閱表單顯示...</div>';
+            
+            try {
+                if (typeof app !== 'undefined' && app.showSubscriptionForm) {
+                    app.showSubscriptionForm();
+                    results.innerHTML = '<div class="status success">✅ 訂閱表單顯示成功！</div>';
+                    testResults.subscription.form = true;
+                } else {
+                    results.innerHTML = '<div class="status error">❌ App 或 showSubscriptionForm 函數未找到</div>';
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ 錯誤: ${error.message}</div>`;
+            }
+            updateTestSummary();
+        }
+
+        function testSubscriptionSubmission() {
+            const results = document.getElementById('subscription-test-results');
+            results.innerHTML = '<div class="status info">正在測試訂閱提交流程...</div>';
+            
+            try {
+                const testData = {
+                    name: '測試訂閱 - ' + new Date().toLocaleTimeString(),
+                    url: 'https://test.example.com',
+                    price: 'NT$ 200',
+                    nextPayment: '2025-12-31'
+                };
+                
+                if (typeof app !== 'undefined' && app.crudManager) {
+                    app.crudManager.createSubscription(testData).then(result => {
+                        if (result.success) {
+                            results.innerHTML = '<div class="status success">✅ 訂閱提交測試成功！</div>';
+                            testResults.subscription.submission = true;
+                        } else {
+                            results.innerHTML = `<div class="status error">❌ 訂閱提交失敗: ${result.message}</div>`;
+                        }
+                        updateTestSummary();
+                    }).catch(error => {
+                        results.innerHTML = `<div class="status error">❌ 訂閱提交錯誤: ${error.message}</div>`;
+                        updateTestSummary();
+                    });
+                } else {
+                    results.innerHTML = '<div class="status error">❌ CRUD 管理器未初始化</div>';
+                    updateTestSummary();
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ 錯誤: ${error.message}</div>`;
+                updateTestSummary();
+            }
+        }
+
+        function testSubscriptionError() {
+            const results = document.getElementById('subscription-test-results');
+            results.innerHTML = '<div class="status warning">正在測試訂閱錯誤處理...</div>';
+            
+            try {
+                // 測試空數據提交
+                const invalidData = { name: '', url: '', price: '', nextPayment: '' };
+                
+                if (typeof app !== 'undefined' && app.crudManager) {
+                    app.crudManager.createSubscription(invalidData).then(result => {
+                        if (!result.success) {
+                            results.innerHTML = '<div class="status success">✅ 錯誤處理正常！正確拒絕無效數據</div>';
+                            testResults.subscription.error = true;
+                        } else {
+                            results.innerHTML = '<div class="status warning">⚠️ 錯誤處理可能需要改進</div>';
+                        }
+                        updateTestSummary();
+                    }).catch(error => {
+                        results.innerHTML = '<div class="status success">✅ 錯誤處理正常！捕獲到錯誤</div>';
+                        testResults.subscription.error = true;
+                        updateTestSummary();
+                    });
+                } else {
+                    results.innerHTML = '<div class="status error">❌ CRUD 管理器未初始化</div>';
+                    updateTestSummary();
+                }
+            } catch (error) {
+                results.innerHTML = '<div class="status success">✅ 錯誤處理正常！捕獲到錯誤</div>';
+                testResults.subscription.error = true;
+                updateTestSummary();
+            }
+        }
+
+        // 系統狀態檢查
+        function checkSystemStatus() {
+            const results = document.getElementById('system-status');
+            
+            try {
+                if (typeof app !== 'undefined') {
+                    const status = {
+                        app: !!app,
+                        crudManager: !!app.crudManager,
+                        initialized: app.crudManagerInitialized,
+                        contentfulManager: !!app.contentfulManager,
+                        showFoodForm: typeof app.showFoodForm === 'function',
+                        saveFoodForm: typeof app.saveFoodForm === 'function',
+                        showSubscriptionForm: typeof app.showSubscriptionForm === 'function',
+                        saveSubscriptionForm: typeof app.saveSubscriptionForm === 'function'
+                    };
+                    
+                    const allGood = Object.values(status).every(v => v === true);
+                    testResults.system = allGood;
+                    
+                    results.innerHTML = `
+                        <div class="status ${allGood ? 'success' : 'warning'}">
+                            <strong>系統狀態檢查：</strong><br>
+                            - App 實例: ${status.app ? '✅' : '❌'}<br>
+                            - CRUD 管理器: ${status.crudManager ? '✅' : '❌'}<br>
+                            - 已初始化: ${status.initialized ? '✅' : '❌'}<br>
+                            - Contentful 管理器: ${status.contentfulManager ? '✅' : '❌'}<br>
+                            - showFoodForm: ${status.showFoodForm ? '✅' : '❌'}<br>
+                            - saveFoodForm: ${status.saveFoodForm ? '✅' : '❌'}<br>
+                            - showSubscriptionForm: ${status.showSubscriptionForm ? '✅' : '❌'}<br>
+                            - saveSubscriptionForm: ${status.saveSubscriptionForm ? '✅' : '❌'}
+                        </div>
+                    `;
+                } else {
+                    results.innerHTML = '<div class="status error">❌ App 實例未找到</div>';
+                }
+            } catch (error) {
+                results.innerHTML = `<div class="status error">❌ 錯誤: ${error.message}</div>`;
+            }
+            updateTestSummary();
+        }
+
+        // 執行所有測試
+        function runAllTests() {
+            console.log('🧪 開始執行完整測試...');
+            
+            checkSystemStatus();
+            
+            setTimeout(() => {
+                testFoodForm();
+                testSubscriptionForm();
+            }, 1000);
+            
+            setTimeout(() => {
+                testFoodSubmission();
+                testSubscriptionSubmission();
+            }, 2000);
+            
+            setTimeout(() => {
+                testFoodError();
+                testSubscriptionError();
+            }, 3000);
+        }
+
+        // 更新測試摘要
+        function updateTestSummary() {
+            const summary = document.getElementById('test-summary');
+            const totalTests = 7; // 總測試數
+            let passedTests = 0;
+            
+            if (testResults.system) passedTests++;
+            if (testResults.food.form) passedTests++;
+            if (testResults.food.submission) passedTests++;
+            if (testResults.food.error) passedTests++;
+            if (testResults.subscription.form) passedTests++;
+            if (testResults.subscription.submission) passedTests++;
+            if (testResults.subscription.error) passedTests++;
+            
+            const percentage = Math.round((passedTests / totalTests) * 100);
+            const status = percentage === 100 ? 'success' : percentage >= 70 ? 'warning' : 'error';
+            
+            summary.innerHTML = `
+                <div class="status ${status}">
+                    <strong>測試進度: ${passedTests}/${totalTests} (${percentage}%)</strong><br>
+                    - 系統狀態: ${testResults.system ? '✅' : '❌'}<br>
+                    - 食品表單: ${testResults.food.form ? '✅' : '❌'}<br>
+                    - 食品提交: ${testResults.food.submission ? '✅' : '❌'}<br>
+                    - 食品錯誤處理: ${testResults.food.error ? '✅' : '❌'}<br>
+                    - 訂閱表單: ${testResults.subscription.form ? '✅' : '❌'}<br>
+                    - 訂閱提交: ${testResults.subscription.submission ? '✅' : '❌'}<br>
+                    - 訂閱錯誤處理: ${testResults.subscription.error ? '✅' : '❌'}
+                </div>
+            `;
+        }
+
+        // 頁面載入完成後初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 彈跳窗修復完整測試頁面已載入');
+            
+            // 等待 app 初始化
+            setTimeout(() => {
+                checkSystemStatus();
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

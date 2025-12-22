@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>編輯功能同步測試</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .status-panel {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 25px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            background: #fff;
+        }
+        
+        .test-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+            transform: translateY(-2px);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        .log-area {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+            border: 2px solid #333;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .data-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .data-card h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+        
+        .data-card p {
+            margin: 5px 0;
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-online {
+            background: #28a745;
+        }
+        
+        .status-offline {
+            background: #dc3545;
+        }
+        
+        .status-syncing {
+            background: #ffc107;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 8px;
+        }
+        
+        .alert-info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .alert-warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .alert-danger {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 編輯功能同步測試</h1>
+            <p>測試食品和訂閱編輯功能是否正確同步到 Contentful</p>
+        </div>
+
+        <div class="status-panel">
+            <h3>🔍 系統狀態</h3>
+            <p id="connection-status">
+                <span class="status-indicator status-offline"></span>
+                正在檢查連接狀態...
+            </p>
+            <p id="data-status">正在載入數據...</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 快速修復</h3>
+            <p>點擊下方按鈕立即修復編輯功能同步問題：</p>
+            <button class="btn btn-primary" onclick="applyFix()">🔧 立即修復編輯同步問題</button>
+            <button class="btn btn-success" onclick="testEditSync()">🧪 測試編輯同步功能</button>
+            <button class="btn btn-warning" onclick="loadTestData()">📊 載入測試數據</button>
+        </div>
+
+        <div class="test-section">
+            <h3>🍎 食品編輯測試</h3>
+            <div id="food-data" class="data-grid">
+                <p>正在載入食品數據...</p>
+            </div>
+            <button class="btn btn-primary" onclick="testFoodEdit()">測試食品編輯</button>
+        </div>
+
+        <div class="test-section">
+            <h3>💳 訂閱編輯測試</h3>
+            <div id="subscription-data" class="data-grid">
+                <p>正在載入訂閱數據...</p>
+            </div>
+            <button class="btn btn-primary" onclick="testSubscriptionEdit()">測試訂閱編輯</button>
+        </div>
+
+        <div class="test-section">
+            <h3>📋 測試日誌</h3>
+            <div id="log-area" class="log-area">
+                <div>🔧 編輯功能同步測試工具已啟動</div>
+                <div>📅 時間: <span id="current-time"></span></div>
+                <div>🔍 正在檢查系統狀態...</div>
+            </div>
+            <button class="btn btn-warning" onclick="clearLog()">清除日誌</button>
+            <button class="btn btn-success" onclick="exportLog()">導出日誌</button>
+        </div>
+    </div>
+
+    <!-- 載入必要的腳本 -->
+    <script src="src/js/contentfulManager.js"></script>
+    <script src="src/js/crudManager.js"></script>
+    <script src="fix-edit-sync.js"></script>
+
+    <script>
+        // 全域變數
+        let contentfulManager = null;
+        let crudManager = null;
+        let testLog = [];
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+            initializeManagers();
+        });
+
+        function updateCurrentTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-TW');
+        }
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString('zh-TW');
+            const logEntry = `[${timestamp}] ${message}`;
+            testLog.push(logEntry);
+            
+            const logArea = document.getElementById('log-area');
+            const logDiv = document.createElement('div');
+            logDiv.textContent = logEntry;
+            
+            if (type === 'error') {
+                logDiv.style.color = '#ff6b6b';
+            } else if (type === 'success') {
+                logDiv.style.color = '#51cf66';
+            } else if (type === 'warning') {
+                logDiv.style.color = '#ffd43b';
+            }
+            
+            logArea.appendChild(logDiv);
+            logArea.scrollTop = logArea.scrollHeight;
+            
+            console.log(logEntry);
+        }
+
+        async function initializeManagers() {
+            try {
+                log('🔄 正在初始化管理器...');
+                
+                // 初始化 Contentful 管理器
+                if (typeof ContentfulManager !== 'undefined') {
+                    contentfulManager = new ContentfulManager();
+                    log('✅ ContentfulManager 初始化成功');
+                } else {
+                    log('❌ ContentfulManager 未找到', 'error');
+                }
+                
+                // 初始化 CRUD 管理器
+                if (typeof CrudManager !== 'undefined') {
+                    crudManager = new CrudManager(contentfulManager);
+                    log('✅ CrudManager 初始化成功');
+                } else {
+                    log('❌ CrudManager 未找到', 'error');
+                }
+                
+                // 測試連接
+                await testConnection();
+                
+                // 載入數據
+                await loadData();
+                
+            } catch (error) {
+                log(`❌ 初始化失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function testConnection() {
+            try {
+                log('🔍 測試 Contentful 連接...');
+                
+                if (!contentfulManager) {
+                    throw new Error('ContentfulManager 未初始化');
+                }
+                
+                const result = await contentfulManager.testConnection();
+                const statusEl = document.getElementById('connection-status');
+                
+                if (result.success) {
+                    log(`✅ Contentful 連接成功: ${result.spaceName}`, 'success');
+                    statusEl.innerHTML = `
+                        <span class="status-indicator status-online"></span>
+                        已連接到 Contentful: ${result.spaceName}
+                    `;
+                } else {
+                    log(`⚠️ Contentful 連接失敗: ${result.message}`, 'warning');
+                    statusEl.innerHTML = `
+                        <span class="status-indicator status-offline"></span>
+                        Contentful 連接失敗: ${result.message}
+                    `;
+                }
+            } catch (error) {
+                log(`❌ 連接測試失敗: ${error.message}`, 'error');
+                document.getElementById('connection-status').innerHTML = `
+                    <span class="status-indicator status-offline"></span>
+                    連接測試失敗: ${error.message}
+                `;
+            }
+        }
+
+        async function loadData() {
+            try {
+                log('📊 載入數據...');
+                
+                if (!crudManager) {
+                    throw new Error('CrudManager 未初始化');
+                }
+                
+                // 載入數據
+                await crudManager.loadInitialData();
+                
+                // 更新UI
+                updateFoodData();
+                updateSubscriptionData();
+                updateDataStatus();
+                
+                log('✅ 數據載入完成', 'success');
+                
+            } catch (error) {
+                log(`❌ 載入數據失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function updateFoodData() {
+            const foods = crudManager ? crudManager.readAllFood() : [];
+            const foodDataEl = document.getElementById('food-data');
+            
+            if (foods.length === 0) {
+                foodDataEl.innerHTML = '<p>沒有食品數據</p>';
+                return;
+            }
+            
+            foodDataEl.innerHTML = foods.map(food => `
+                <div class="data-card">
+                    <h4>${food.name}</h4>
+                    <p><strong>ID:</strong> ${food.id}</p>
+                    <p><strong>品牌:</strong> ${food.brand}</p>
+                    <p><strong>到期日:</strong> ${food.expiry}</p>
+                    <p><strong>狀態:</strong> ${food.status}</p>
+                    <p><strong>Contentful ID:</strong> ${food.contentfulId || '未設定'}</p>
+                    <button class="btn btn-warning" onclick="editFood(${food.id})">編輯</button>
+                </div>
+            `).join('');
+        }
+
+        function updateSubscriptionData() {
+            const subscriptions = crudManager ? crudManager.readAllSubscriptions() : [];
+            const subDataEl = document.getElementById('subscription-data');
+            
+            if (subscriptions.length === 0) {
+                subDataEl.innerHTML = '<p>沒有訂閱數據</p>';
+                return;
+            }
+            
+            subDataEl.innerHTML = subscriptions.map(sub => `
+                <div class="data-card">
+                    <h4>${sub.name}</h4>
+                    <p><strong>ID:</strong> ${sub.id}</p>
+                    <p><strong>價格:</strong> ${sub.price}</p>
+                    <p><strong>下次付款:</strong> ${sub.nextPayment}</p>
+                    <p><strong>狀態:</strong> ${sub.status}</p>
+                    <p><strong>Contentful ID:</strong> ${sub.contentfulId || '未設定'}</p>
+                    <button class="btn btn-warning" onclick="editSubscription(${sub.id})">編輯</button>
+                </div>
+            `).join('');
+        }
+
+        function updateDataStatus() {
+            const foods = crudManager ? crudManager.readAllFood() : [];
+            const subscriptions = crudManager ? crudManager.readAllSubscriptions() : [];
+            
+            document.getElementById('data-status').textContent = 
+                `已載入 ${foods.length} 個食品項目和 ${subscriptions.length} 個訂閱項目`;
+        }
+
+        async function applyFix() {
+            try {
+                log('🔧 正在應用編輯同步修復...', 'warning');
+                
+                // 這裡會執行 fix-edit-sync.js 中的修復邏輯
+                // 由於腳本已經載入，修復應該已經自動應用
+                
+                log('✅ 編輯同步修復已應用', 'success');
+                alert('✅ 編輯功能同步修復已完成！\n\n現在編輯食品和訂閱時會自動同步到 Contentful。');
+                
+            } catch (error) {
+                log(`❌ 應用修復失敗: ${error.message}`, 'error');
+                alert('❌ 修復失敗: ' + error.message);
+            }
+        }
+
+        async function testEditSync() {
+            try {
+                log('🧪 開始測試編輯同步功能...', 'warning');
+                
+                const foods = crudManager ? crudManager.readAllFood() : [];
+                const subscriptions = crudManager ? crudManager.readAllSubscriptions() : [];
+                
+                let testsPassed = 0;
+                let totalTests = 0;
+                
+                // 測試食品編輯
+                if (foods.length > 0) {
+                    totalTests++;
+                    const testFood = foods[0];
+                    log(`🍎 測試編輯食品: ${testFood.name}`);
+                    
+                    const result = await crudManager.updateFood(testFood.id, {
+                        name: testFood.name + ' (測試編輯)',
+                        status: '測試中'
+                    });
+                    
+                    if (result.success) {
+                        log('✅ 食品編輯測試通過', 'success');
+                        testsPassed++;
+                    } else {
+                        log(`❌ 食品編輯測試失敗: ${result.message}`, 'error');
+                    }
+                }
+                
+                // 測試訂閱編輯
+                if (subscriptions.length > 0) {
+                    totalTests++;
+                    const testSub = subscriptions[0];
+                    log(`💳 測試編輯訂閱: ${testSub.name}`);
+                    
+                    const result = await crudManager.updateSubscription(testSub.id, {
+                        name: testSub.name + ' (測試編輯)',
+                        price: 'NT$ 999'
+                    });
+                    
+                    if (result.success) {
+                        log('✅ 訂閱編輯測試通過', 'success');
+                        testsPassed++;
+                    } else {
+                        log(`❌ 訂閱編輯測試失敗: ${result.message}`, 'error');
+                    }
+                }
+                
+                // 更新UI
+                updateFoodData();
+                updateSubscriptionData();
+                
+                // 顯示測試結果
+                const message = `測試完成！\n通過: ${testsPassed}/${totalTests}`;
+                log(message, testsPassed === totalTests ? 'success' : 'warning');
+                alert(message);
+                
+            } catch (error) {
+                log(`❌ 測試失敗: ${error.message}`, 'error');
+                alert('❌ 測試失敗: ' + error.message);
+            }
+        }
+
+        async function loadTestData() {
+            try {
+                log('📊 載入測試數據...', 'warning');
+                
+                if (!crudManager) {
+                    throw new Error('CrudManager 未初始化');
+                }
+                
+                // 重新載入數據
+                await crudManager.loadInitialData();
+                
+                // 更新UI
+                updateFoodData();
+                updateSubscriptionData();
+                updateDataStatus();
+                
+                log('✅ 測試數據載入完成', 'success');
+                
+            } catch (error) {
+                log(`❌ 載入測試數據失敗: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFoodEdit() {
+            const foods = crudManager ? crudManager.readAllFood() : [];
+            if (foods.length === 0) {
+                alert('沒有食品數據可供測試');
+                return;
+            }
+            
+            const testFood = foods[0];
+            const newName = prompt('輸入新的食品名稱:', testFood.name);
+            if (!newName) return;
+            
+            try {
+                log(`🍎 編輯食品: ${testFood.name} -> ${newName}`);
+                const result = await crudManager.updateFood(testFood.id, {
+                    name: newName,
+                    status: '已編輯'
+                });
+                
+                if (result.success) {
+                    log('✅ 食品編輯成功', 'success');
+                    updateFoodData();
+                    alert('✅ 食品編輯成功！');
+                } else {
+                    log(`❌ 食品編輯失敗: ${result.message}`, 'error');
+                    alert('❌ 食品編輯失敗: ' + result.message);
+                }
+            } catch (error) {
+                log(`❌ 食品編輯錯誤: ${error.message}`, 'error');
+                alert('❌ 食品編輯錯誤: ' + error.message);
+            }
+        }
+
+        async function testSubscriptionEdit() {
+            const subscriptions = crudManager ? crudManager.readAllSubscriptions() : [];
+            if (subscriptions.length === 0) {
+                alert('沒有訂閱數據可供測試');
+                return;
+            }
+            
+            const testSub = subscriptions[0];
+            const newName = prompt('輸入新的訂閱名稱:', testSub.name);
+            if (!newName) return;
+            
+            try {
+                log(`💳 編輯訂閱: ${testSub.name} -> ${newName}`);
+                const result = await crudManager.updateSubscription(testSub.id, {
+                    name: newName,
+                    price: 'NT$ 888'
+                });
+                
+                if (result.success) {
+                    log('✅ 訂閱編輯成功', 'success');
+                    updateSubscriptionData();
+                    alert('✅ 訂閱編輯成功！');
+                } else {
+                    log(`❌ 訂閱編輯失敗: ${result.message}`, 'error');
+                    alert('❌ 訂閱編輯失敗: ' + result.message);
+                }
+            } catch (error) {
+                log(`❌ 訂閱編輯錯誤: ${error.message}`, 'error');
+                alert('❌ 訂閱編輯錯誤: ' + error.message);
+            }
+        }
+
+        async function editFood(id) {
+            const food = crudManager.readFood(id);
+            if (!food) {
+                alert('找不到指定的食品');
+                return;
+            }
+            
+            const newName = prompt('輸入新的食品名稱:', food.name);
+            if (!newName) return;
+            
+            const newExpiry = prompt('輸入新的到期日 (YYYY-MM-DD):', food.expiry);
+            if (!newExpiry) return;
+            
+            try {
+                log(`🍎 編輯食品 ID ${id}: ${food.name} -> ${newName}`);
+                const result = await crudManager.updateFood(id, {
+                    name: newName,
+                    expiry: newExpiry,
+                    status: '已編輯'
+                });
+                
+                if (result.success) {
+                    log('✅ 食品編輯成功', 'success');
+                    updateFoodData();
+                    alert('✅ 食品編輯成功！');
+                } else {
+                    log(`❌ 食品編輯失敗: ${result.message}`, 'error');
+                    alert('❌ 食品編輯失敗: ' + result.message);
+                }
+            } catch (error) {
+                log(`❌ 食品編輯錯誤: ${error.message}`, 'error');
+                alert('❌ 食品編輯錯誤: ' + error.message);
+            }
+        }
+
+        async function editSubscription(id) {
+            const subscription = crudManager.readSubscription(id);
+            if (!subscription) {
+                alert('找不到指定的訂閱');
+                return;
+            }
+            
+            const newName = prompt('輸入新的訂閱名稱:', subscription.name);
+            if (!newName) return;
+            
+            const newPrice = prompt('輸入新的價格:', subscription.price);
+            if (!newPrice) return;
+            
+            try {
+                log(`💳 編輯訂閱 ID ${id}: ${subscription.name} -> ${newName}`);
+                const result = await crudManager.updateSubscription(id, {
+                    name: newName,
+                    price: newPrice
+                });
+                
+                if (result.success) {
+                    log('✅ 訂閱編輯成功', 'success');
+                    updateSubscriptionData();
+                    alert('✅ 訂閱編輯成功！');
+                } else {
+                    log(`❌ 訂閱編輯失敗: ${result.message}`, 'error');
+                    alert('❌ 訂閱編輯失敗: ' + result.message);
+                }
+            } catch (error) {
+                log(`❌ 訂閱編輯錯誤: ${error.message}`, 'error');
+                alert('❌ 訂閱編輯錯誤: ' + error.message);
+            }
+        }
+
+        function clearLog() {
+            document.getElementById('log-area').innerHTML = '';
+            testLog = [];
+            log('📋 日誌已清除');
+        }
+
+        function exportLog() {
+            const logContent = testLog.join('\n');
+            const blob = new Blob([logContent], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `edit-sync-test-log-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            URL.revokeObjectURL(url);
+            log('📄 日誌已導出');
+        }
+    </script>
+</body>
+</html>

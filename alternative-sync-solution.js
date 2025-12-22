@@ -78,6 +78,52 @@ class LocalSyncManager {
         return syncItem.id;
     }
 
+    // 新增刪除操作到同步佇列
+    addDeleteToSyncQueue(type, contentfulId) {
+        const syncItem = {
+            id: Date.now(),
+            action: 'delete',
+            type: type,
+            contentfulId: contentfulId,
+            timestamp: new Date().toISOString(),
+            synced: false
+        };
+
+        if (type === 'food') {
+            this.syncQueue.pendingFood.push(syncItem);
+        } else if (type === 'subscription') {
+            this.syncQueue.pendingSubscriptions.push(syncItem);
+        }
+        
+        this.saveSyncQueue();
+        
+        console.log(`✅ ${type} 刪除操作已加入同步佇列:`, syncItem.id);
+        return syncItem.id;
+    }
+
+    // 新增更新操作到同步佇列
+    addUpdateToSyncQueue(type, data) {
+        const syncItem = {
+            id: Date.now(),
+            action: 'update',
+            type: type,
+            data: data,
+            timestamp: new Date().toISOString(),
+            synced: false
+        };
+
+        if (type === 'food') {
+            this.syncQueue.pendingFood.push(syncItem);
+        } else if (type === 'subscription') {
+            this.syncQueue.pendingSubscriptions.push(syncItem);
+        }
+        
+        this.saveSyncQueue();
+        
+        console.log(`✅ ${type} 更新操作已加入同步佇列:`, syncItem.id);
+        return syncItem.id;
+    }
+
     // 獲取待同步項目
     getPendingItems() {
         const pending = [

@@ -8,8 +8,14 @@ class CrudManager {
         this.contentfulManager = contentfulManager;
         this.isOnline = true;
         
-        // 本地同步管理器將在需要時初始化
-        this.localSyncManager = null;
+        // 初始化本地同步管理器
+        if (typeof LocalSyncManager !== 'undefined') {
+            this.localSyncManager = new LocalSyncManager();
+            console.log('✅ 本地同步管理器已初始化');
+        } else {
+            this.localSyncManager = null;
+            console.warn('⚠️ LocalSyncManager 未找到，同步功能將受限');
+        }
     }
 
     // 從 Contentful 載入資料
@@ -46,7 +52,8 @@ class CrudManager {
                 expiry: food.expiry,
                 daysLeft: this.calculateDaysLeft(food.expiry),
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                contentfulId: food.contentfulId || null // 保存 Contentful ID
             }));
 
             this.subscriptions = subscriptions.map((sub, index) => ({
@@ -58,7 +65,8 @@ class CrudManager {
                 daysLeft: this.calculateDaysLeft(sub.nextPayment),
                 status: this.getSubscriptionStatus(sub.nextPayment),
                 createdAt: new Date(),
-                updatedAt: new Date()
+                updatedAt: new Date(),
+                contentfulId: sub.contentfulId || null // 保存 Contentful ID
             }));
 
             this.nextFoodId = this.foodItems.length + 1;
@@ -304,7 +312,7 @@ class CrudManager {
     }
 
     // 更新訂閱
-    updateSubscription(id, updateData) {
+    async updateSubscription(id, updateData) {
         const index = this.subscriptions.findIndex(item => item.id === parseInt(id));
         
         if (index === -1) {
@@ -321,6 +329,38 @@ class CrudManager {
 
         this.subscriptions[index] = updatedSubscription;
         console.log('更新訂閱:', updatedSubscription);
+
+        // 嘗試同步到 Contentful
+        if (this.contentfulManager && this.isOnline && updatedSubscription.contentfulId) {
+            try {
+                const result = await this.contentfulManager.updateSubscriptionEntry(updatedSubscription.contentfulId, updatedSubscription);
+                if (result.success) {
+                    console.log('✅ 訂閱更新已同步到 Contentful:', updatedSubscription.contentfulId);
+                } else {
+                    console.warn('⚠️ 訂閱更新同步到 Contentful 失敗:', result.error);
+                    // 加入本地同步佇列作為備用方案
+                    if (this.localSyncManager) {
+                        const syncId = this.localSyncManager.addUpdateToSyncQueue('subscription', updatedSubscription);
+                        updatedSubscription.syncQueueId = syncId;
+                        console.log('📝 已加入更新同步佇列:', syncId);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ 同步訂閱更新到 Contentful 時發生錯誤:', error);
+                // 加入本地同步佇列作為備用方案
+                if (this.localSyncManager) {
+                    const syncId = this.localSyncManager.addUpdateToSyncQueue('subscription', updatedSubscription);
+                    updatedSubscription.syncQueueId = syncId;
+                    console.log('📝 已加入更新同步佇列:', syncId);
+                }
+            }
+        } else if (this.localSyncManager) {
+            // 如果沒有 Contentful 連接，直接加入本地同步佇列
+            const syncId = this.localSyncManager.addUpdateToSyncQueue('subscription', updatedSubscription);
+            updatedSubscription.syncQueueId = syncId;
+            console.log('📝 已加入更新同步佇列:', syncId);
+        }
+
         return { success: true, data: updatedSubscription, message: '訂閱更新成功' };
     }
 
@@ -453,24 +493,24 @@ class CrudManager {
     loadLocalFallbackData() {
         // 載入一些示例數據
         this.createFood({
-            name: '【茶台灣】珍奶香吉休閒丸子',
-            brand: '茶台灣',
+            name: '【張君雅】五香海苔休閒丸子',
+            brand: '張君雅',
             price: 'NT$ 25',
             status: '良好',
             expiry: '2026-01-06'
         });
 
         this.createFood({
-            name: '【茶台灣】日式甲殼休閒丸子',
-            brand: '茶台灣',
+            name: '【張君雅】日式串燒休閒丸子',
+            brand: '張君雅',
             price: 'NT$ 25',
             status: '良好',
             expiry: '2026-01-07'
         });
 
         this.createSubscription({
-            name: '天虎/實信訊/心靈內科',
-            url: 'https://www.tsung.com.tw/index.php/main/schedule_time?id=18',
+            name: '天虎/黃信訊/心臟內科',
+            url: 'https://www.tcmg.com.tw/index.php/main/schedule_time?id=18',
             price: 'NT$ 530',
             nextPayment: '2025-12-26'
         });

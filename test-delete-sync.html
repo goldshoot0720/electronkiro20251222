@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試刪除同步功能</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        .info { color: #17a2b8; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 刪除同步功能測試</h1>
+        
+        <div class="test-section">
+            <h3>測試控制</h3>
+            <button onclick="runDeleteTest()">🚀 開始測試</button>
+            <button onclick="clearLog()">🗑️ 清除日誌</button>
+            <button onclick="checkSyncStatus()">📊 檢查同步狀態</button>
+        </div>
+
+        <div class="test-section">
+            <h3>測試日誌</h3>
+            <div id="log" class="log">點擊「開始測試」按鈕開始測試刪除同步功能...</div>
+        </div>
+
+        <div class="test-section">
+            <h3>當前資料狀態</h3>
+            <div id="status">等待初始化...</div>
+        </div>
+    </div>
+
+    <!-- 引入必要的 JavaScript 文件 -->
+    <script src="src/js/contentfulManager.js"></script>
+    <script src="src/js/localSyncManager.js"></script>
+    <script src="src/js/crudManager.js"></script>
+
+    <script>
+        let app = {
+            contentfulManager: null,
+            crudManager: null,
+            initialized: false
+        };
+
+        // 日誌函數
+        function log(message, type = 'info') {
+            const logElement = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : 
+                             type === 'error' ? 'error' : 
+                             type === 'warning' ? 'warning' : 'info';
+            
+            logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        // 初始化應用
+        async function initApp() {
+            if (app.initialized) return true;
+
+            try {
+                log('🔄 初始化應用...', 'info');
+                
+                // 初始化 ContentfulManager
+                app.contentfulManager = new ContentfulManager();
+                
+                // 測試連接
+                const connectionTest = await app.contentfulManager.testConnection();
+                if (connectionTest.success) {
+                    log(`✅ Contentful 連接成功: ${connectionTest.spaceName}`, 'success');
+                } else {
+                    log(`⚠️ Contentful 連接失敗: ${connectionTest.message}`, 'warning');
+                }
+
+                // 初始化 CrudManager
+                app.crudManager = new CrudManager(app.contentfulManager);
+                
+                // 載入初始資料
+                const loaded = await app.crudManager.loadInitialData();
+                log(`📊 資料載入: ${loaded ? '✅ 成功' : '⚠️ 使用備用資料'}`, loaded ? 'success' : 'warning');
+
+                app.initialized = true;
+                updateStatus();
+                
+                return true;
+            } catch (error) {
+                log(`❌ 初始化失敗: ${error.message}`, 'error');
+                return false;
+            }
+        }
+
+        // 更新狀態顯示
+        function updateStatus() {
+            if (!app.crudManager) {
+                document.getElementById('status').innerHTML = '❌ 未初始化';
+                return;
+            }
+
+            const foods = app.crudManager.readAllFood();
+            const subscriptions = app.crudManager.readAllSubscriptions();
+            
+            document.getElementById('status').innerHTML = `
+                <div>📊 <strong>資料統計:</strong></div>
+                <div>🍎 食品: ${foods.length} 項</div>
+                <div>📱 訂閱: ${subscriptions.length} 項</div>
+                <div>🔄 同步管理器: ${app.crudManager.localSyncManager ? '✅ 已初始化' : '❌ 未初始化'}</div>
+            `;
+        }
+
+        // 檢查同步狀態
+        function checkSyncStatus() {
+            if (!app.crudManager) {
+                log('❌ CRUD 管理器未初始化', 'error');
+                return;
+            }
+
+            const syncReport = app.crudManager.getSyncReport();
+            if (syncReport.error) {
+                log(`⚠️ 同步狀態: ${syncReport.error}`, 'warning');
+            } else {
+                log(`📊 同步狀態報告:`, 'info');
+                log(`   - 總項目: ${syncReport.summary.totalItems}`, 'info');
+                log(`   - 已同步: ${syncReport.summary.syncedItems}`, 'info');
+                log(`   - 待同步: ${syncReport.summary.pendingItems}`, 'info');
+                log(`   - 最後同步: ${syncReport.summary.lastSync || '從未同步'}`, 'info');
+            }
+        }
+
+        // 主要測試函數
+        async function runDeleteTest() {
+            clearLog();
+            log('🧪 開始刪除同步功能測試', 'info');
+
+            // 初始化應用
+            const initialized = await initApp();
+            if (!initialized) {
+                log('❌ 應用初始化失敗，測試中止', 'error');
+                return;
+            }
+
+            try {
+                // 1. 新增測試食品
+                log('\n1️⃣ 新增測試食品...', 'info');
+                const newFood = await app.crudManager.createFood({
+                    name: '測試刪除食品 - 瀏覽器',
+                    brand: '測試品牌',
+                    price: 'NT$ 50',
+                    status: '良好',
+                    expiry: '2025-12-31'
+                });
+                
+                if (newFood.success) {
+                    log(`✅ 食品新增成功 (ID: ${newFood.data.id})`, 'success');
+                    log(`   Contentful ID: ${newFood.data.contentfulId || '未同步'}`, 'info');
+                } else {
+                    log(`❌ 食品新增失敗: ${newFood.message}`, 'error');
+                    return;
+                }
+
+                // 2. 新增測試訂閱
+                log('\n2️⃣ 新增測試訂閱...', 'info');
+                const newSubscription = await app.crudManager.createSubscription({
+                    name: '測試刪除訂閱 - 瀏覽器',
+                    url: 'https://test-delete-browser.com',
+                    price: 'NT$ 99',
+                    nextPayment: '2025-12-31'
+                });
+                
+                if (newSubscription.success) {
+                    log(`✅ 訂閱新增成功 (ID: ${newSubscription.data.id})`, 'success');
+                    log(`   Contentful ID: ${newSubscription.data.contentfulId || '未同步'}`, 'info');
+                } else {
+                    log(`❌ 訂閱新增失敗: ${newSubscription.message}`, 'error');
+                    return;
+                }
+
+                // 等待同步完成
+                log('\n⏳ 等待 3 秒確保同步完成...', 'info');
+                await new Promise(resolve => setTimeout(resolve, 3000));
+
+                // 3. 測試刪除食品
+                log('\n3️⃣ 測試刪除食品...', 'info');
+                const deleteFood = await app.crudManager.deleteFood(newFood.data.id);
+                if (deleteFood.success) {
+                    log(`✅ 食品刪除成功: ${deleteFood.message}`, 'success');
+                } else {
+                    log(`❌ 食品刪除失敗: ${deleteFood.message}`, 'error');
+                }
+
+                // 4. 測試刪除訂閱
+                log('\n4️⃣ 測試刪除訂閱...', 'info');
+                const deleteSubscription = await app.crudManager.deleteSubscription(newSubscription.data.id);
+                if (deleteSubscription.success) {
+                    log(`✅ 訂閱刪除成功: ${deleteSubscription.message}`, 'success');
+                } else {
+                    log(`❌ 訂閱刪除失敗: ${deleteSubscription.message}`, 'error');
+                }
+
+                // 5. 檢查同步狀態
+                log('\n5️⃣ 檢查同步狀態...', 'info');
+                checkSyncStatus();
+
+                // 6. 更新狀態顯示
+                updateStatus();
+
+                log('\n✅ 刪除同步功能測試完成！', 'success');
+
+            } catch (error) {
+                log(`❌ 測試過程中發生錯誤: ${error.message}`, 'error');
+                console.error('測試錯誤:', error);
+            }
+        }
+
+        // 頁面載入時初始化
+        window.addEventListener('load', async () => {
+            log('🚀 頁面載入完成，準備初始化...', 'info');
+            await initApp();
+        });
+    </script>
+</body>
+</html>

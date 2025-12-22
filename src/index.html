@@ -315,6 +315,7 @@
     </div>
 
     <script src="js/contentfulManager.js"></script>
+    <script src="js/localSyncManager.js"></script>
     <script src="js/crudManager.js"></script>
     <script src="js/imageManager.js"></script>
     <script src="js/videoManager.js"></script>
@@ -441,7 +442,48 @@
             }
         };
         
-        console.log('💡 可用的修正命令:');
+        // 系統診斷函數
+        window.systemDiagnostics = function() {
+            console.log('🔍 系統診斷報告:');
+            console.log('==================');
+            
+            // 檢查 App 實例
+            console.log('1. App 實例:', app ? '✅ 正常' : '❌ 異常');
+            
+            // 檢查管理器
+            const managers = [
+                { name: 'CRUD 管理器', instance: app?.crudManager, initialized: app?.crudManagerInitialized },
+                { name: '內容管理器', instance: app?.contentfulManager },
+                { name: '音樂管理器', instance: app?.songManager },
+                { name: '圖片管理器', instance: app?.imageManager },
+                { name: '影片管理器', instance: app?.videoManager }
+            ];
+            
+            managers.forEach((manager, index) => {
+                const status = manager.instance ? '✅ 已載入' : '❌ 未載入';
+                const initStatus = manager.initialized !== undefined ? 
+                    (manager.initialized ? ' (已初始化)' : ' (未初始化)') : '';
+                console.log(`${index + 2}. ${manager.name}: ${status}${initStatus}`);
+            });
+            
+            // 檢查頁面狀態
+            console.log(`6. 當前頁面: ${app?.currentPage || '未知'}`);
+            
+            // 檢查數據狀態
+            if (app?.crudManager) {
+                console.log(`7. 食品數據: ${app.crudManager.foodItems?.length || 0} 項`);
+                console.log(`8. 訂閱數據: ${app.crudManager.subscriptions?.length || 0} 項`);
+            }
+            
+            console.log('==================');
+            console.log('💡 可用修復命令:');
+            console.log('   emergencyFixCRUD() - 修復 CRUD 功能');
+            console.log('   checkCRUDStatus() - 檢查 CRUD 狀態');
+            console.log('   app.loadPageData(pageName) - 重新載入頁面');
+        };
+        
+        console.log('💡 可用的診斷和修正命令:');
+        console.log('   systemDiagnostics()   // 完整系統診斷');
         console.log('   checkCRUDStatus()     // 檢查 CRUD 狀態');
         console.log('   emergencyFixCRUD()    // 緊急修正 CRUD');
         console.log('   app.initCrudManager() // 重新初始化 CRUD');

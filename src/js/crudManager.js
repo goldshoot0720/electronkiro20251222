@@ -8,11 +8,8 @@ class CrudManager {
         this.contentfulManager = contentfulManager;
         this.isOnline = true;
         
-        // 初始化本地同步管理器
-        if (typeof require !== 'undefined') {
-            const LocalSyncManager = require('../../alternative-sync-solution.js');
-            this.localSyncManager = new LocalSyncManager();
-        }
+        // 本地同步管理器將在需要時初始化
+        this.localSyncManager = null;
     }
 
     // 從 Contentful 載入資料

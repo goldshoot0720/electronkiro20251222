@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD 修復測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .log {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 CRUD 管理器修復測試</h1>
+        
+        <div id="status" class="status info">
+            正在初始化測試環境...
+        </div>
+        
+        <div>
+            <button onclick="testCRUDInitialization()">測試 CRUD 初始化</button>
+            <button onclick="testFoodOperations()">測試食品操作</button>
+            <button onclick="testSubscriptionOperations()">測試訂閱操作</button>
+            <button onclick="emergencyFix()">緊急修復</button>
+            <button onclick="clearLog()">清除日誌</button>
+        </div>
+        
+        <h3>測試日誌</h3>
+        <div id="log" class="log"></div>
+    </div>
+
+    <!-- 載入必要的腳本 -->
+    <script src="src/js/contentfulManager.js"></script>
+    <script src="src/js/crudManager.js"></script>
+    <script src="src/js/app.js"></script>
+
+    <script>
+        let app;
+        let testLog = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            testLog.push(logEntry);
+            
+            document.getElementById('log').textContent = testLog.join('\n');
+            console.log(logEntry);
+            
+            // 更新狀態
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function clearLog() {
+            testLog = [];
+            document.getElementById('log').textContent = '';
+            log('日誌已清除', 'info');
+        }
+        
+        async function initializeApp() {
+            try {
+                log('🚀 開始初始化應用程式...', 'info');
+                
+                // 創建 App 實例
+                app = new App();
+                window.app = app;
+                
+                log('✅ App 實例創建成功', 'success');
+                
+                // 等待初始化完成
+                let attempts = 0;
+                const maxAttempts = 10;
+                
+                while (attempts < maxAttempts && !app.crudManagerInitialized) {
+                    log(`⏳ 等待 CRUD 初始化... (${attempts + 1}/${maxAttempts})`, 'warning');
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    attempts++;
+                }
+                
+                if (app.crudManagerInitialized) {
+                    log('✅ CRUD 管理器初始化成功', 'success');
+                    return true;
+                } else {
+                    log('❌ CRUD 管理器初始化超時', 'error');
+                    return false;
+                }
+                
+            } catch (error) {
+                log(`❌ 初始化失敗: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testCRUDInitialization() {
+            log('🧪 開始測試 CRUD 初始化...', 'info');
+            
+            const success = await initializeApp();
+            
+            if (success) {
+                log('✅ CRUD 初始化測試通過', 'success');
+                
+                // 檢查各項功能
+                log(`📊 食品數量: ${app.crudManager.foodItems?.length || 0}`, 'info');
+                log(`📊 訂閱數量: ${app.crudManager.subscriptions?.length || 0}`, 'info');
+            } else {
+                log('❌ CRUD 初始化測試失敗', 'error');
+            }
+        }
+        
+        async function testFoodOperations() {
+            if (!app || !app.crudManagerInitialized) {
+                log('❌ 請先初始化 CRUD 管理器', 'error');
+                return;
+            }
+            
+            log('🧪 開始測試食品操作...', 'info');
+            
+            try {
+                // 測試新增食品
+                const testFood = {
+                    name: '測試食品',
+                    brand: '測試品牌',
+                    price: 'NT$ 100',
+                    status: '新鮮',
+                    expiry: '2025-12-31'
+                };
+                
+                const addResult = app.crudManager.createFood(testFood);
+                if (addResult.success) {
+                    log('✅ 食品新增測試通過', 'success');
+                    
+                    // 測試讀取
+                    const foods = app.crudManager.readAllFood();
+                    log(`📊 讀取到 ${foods.length} 個食品`, 'info');
+                    
+                    // 測試刪除
+                    const deleteResult = app.crudManager.deleteFood(addResult.data.id);
+                    if (deleteResult.success) {
+                        log('✅ 食品刪除測試通過', 'success');
+                    } else {
+                        log('❌ 食品刪除測試失敗', 'error');
+                    }
+                } else {
+                    log('❌ 食品新增測試失敗', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ 食品操作測試錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testSubscriptionOperations() {
+            if (!app || !app.crudManagerInitialized) {
+                log('❌ 請先初始化 CRUD 管理器', 'error');
+                return;
+            }
+            
+            log('🧪 開始測試訂閱操作...', 'info');
+            
+            try {
+                // 測試新增訂閱
+                const testSubscription = {
+                    name: '測試訂閱',
+                    url: 'https://test.com',
+                    price: 'NT$ 99',
+                    nextPayment: '2025-12-31'
+                };
+                
+                const addResult = app.crudManager.createSubscription(testSubscription);
+                if (addResult.success) {
+                    log('✅ 訂閱新增測試通過', 'success');
+                    
+                    // 測試讀取
+                    const subscriptions = app.crudManager.readAllSubscriptions();
+                    log(`📊 讀取到 ${subscriptions.length} 個訂閱`, 'info');
+                    
+                    // 測試刪除
+                    const deleteResult = app.crudManager.deleteSubscription(addResult.data.id);
+                    if (deleteResult.success) {
+                        log('✅ 訂閱刪除測試通過', 'success');
+                    } else {
+                        log('❌ 訂閱刪除測試失敗', 'error');
+                    }
+                } else {
+                    log('❌ 訂閱新增測試失敗', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ 訂閱操作測試錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        async function emergencyFix() {
+            log('🚨 執行緊急修復...', 'warning');
+            
+            try {
+                if (window.emergencyFixCRUD) {
+                    const result = await window.emergencyFixCRUD();
+                    if (result) {
+                        log('✅ 緊急修復成功', 'success');
+                    } else {
+                        log('❌ 緊急修復失敗', 'error');
+                    }
+                } else {
+                    // 手動修復
+                    if (app) {
+                        app.crudManagerInitialized = false;
+                        await app.initCrudManager();
+                        log('✅ 手動修復完成', 'success');
+                    } else {
+                        await initializeApp();
+                    }
+                }
+            } catch (error) {
+                log(`❌ 緊急修復錯誤: ${error.message}`, 'error');
+            }
+        }
+        
+        // 頁面載入時自動開始測試
+        document.addEventListener('DOMContentLoaded', function() {
+            log('📋 CRUD 修復測試頁面已載入', 'info');
+            log('💡 點擊按鈕開始測試各項功能', 'info');
+        });
+    </script>
+</body>
+</html>

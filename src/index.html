@@ -328,7 +328,7 @@
         let app;
         
         // 等待 DOM 載入完成後初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 開始初始化鋒兄AI資訊系統...');
             
             try {
@@ -340,41 +340,43 @@
                 
                 console.log('✅ 應用程式初始化完成');
                 
-                // 初始化儀表板
-                setTimeout(() => {
-                    if (window.dashboardManager) {
-                        console.log('🎯 初始化儀表板管理器...');
-                        window.dashboardManager.refreshDashboard();
-                    }
-                }, 1000);
+                // 等待 CRUD 管理器完全初始化
+                let initAttempts = 0;
+                const maxAttempts = 10;
                 
-                // 顯示初始化狀態
-                setTimeout(() => {
+                const waitForCRUD = async () => {
+                    while (initAttempts < maxAttempts && !app.crudManagerInitialized) {
+                        console.log(`⏳ 等待 CRUD 初始化... (${initAttempts + 1}/${maxAttempts})`);
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        initAttempts++;
+                    }
+                    
                     if (app.crudManagerInitialized) {
                         console.log('✅ CRUD 管理器已完全初始化');
                         
                         // 刷新儀表板數據
                         if (window.dashboardManager) {
+                            console.log('🎯 初始化儀表板管理器...');
                             window.dashboardManager.refreshDashboard();
                         }
-                    } else {
-                        console.log('⚠️ CRUD 管理器仍在初始化中...');
                         
-                        // 如果 5 秒後仍未初始化，提供手動修正選項
-                        setTimeout(() => {
-                            if (!app.crudManagerInitialized) {
-                                console.log('❌ CRUD 管理器初始化超時');
-                                console.log('💡 請在控制台執行以下命令進行手動修正:');
-                                console.log('   app.initCrudManager()');
-                                
-                                // 顯示用戶提示
-                                if (typeof app.showNotification === 'function') {
-                                    app.showNotification('系統初始化中，請稍後再試', 'warning');
-                                }
-                            }
-                        }, 5000);
+                        // 顯示成功提示
+                        if (typeof app.showNotification === 'function') {
+                            app.showNotification('系統初始化完成，所有功能已就緒', 'success');
+                        }
+                    } else {
+                        console.log('❌ CRUD 管理器初始化超時');
+                        console.log('💡 請在控制台執行: emergencyFixCRUD()');
+                        
+                        // 顯示錯誤提示
+                        if (typeof app.showNotification === 'function') {
+                            app.showNotification('系統初始化中，部分功能可能暫時不可用', 'warning');
+                        }
                     }
-                }, 2000);
+                };
+                
+                // 開始等待初始化
+                waitForCRUD();
                 
             } catch (error) {
                 console.error('❌ 應用程式初始化失敗:', error);
@@ -407,6 +409,11 @@
                 
                 if (typeof app.showNotification === 'function') {
                     app.showNotification('CRUD 功能已修復', 'success');
+                }
+                
+                // 刷新當前頁面
+                if (typeof app.refreshCurrentPage === 'function') {
+                    app.refreshCurrentPage();
                 }
                 
                 return true;

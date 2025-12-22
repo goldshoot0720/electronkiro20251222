@@ -497,10 +497,6 @@ class App {
                             <div class="food-detail-value">${food.price}</div>
                         </div>
                         <div class="food-detail-item">
-                            <div class="food-detail-label">狀態</div>
-                            <div class="food-detail-value">${food.status}</div>
-                        </div>
-                        <div class="food-detail-item">
                             <div class="food-detail-label">到期日期</div>
                             <div class="food-detail-value">${food.expiry}</div>
                         </div>
@@ -1118,16 +1114,6 @@ class App {
                 </div>
                 
                 <div class="form-group">
-                    <label class="form-label">狀態</label>
-                    <select name="status" class="form-select">
-                        <option value="良好" ${food && food.status === '良好' ? 'selected' : ''}>良好</option>
-                        <option value="即將到期" ${food && food.status === '即將到期' ? 'selected' : ''}>即將到期</option>
-                        <option value="已過期" ${food && food.status === '已過期' ? 'selected' : ''}>已過期</option>
-                        <option value="已用完" ${food && food.status === '已用完' ? 'selected' : ''}>已用完</option>
-                    </select>
-                </div>
-                
-                <div class="form-group">
                     <label class="form-label">食品照片</label>
                     <input type="file" name="photo" class="form-input" accept="image/*" 
                            onchange="app.handleFoodPhotoUpload(this)">
@@ -1205,16 +1191,6 @@ class App {
                               placeholder="請輸入備註資訊">${subscription ? (subscription.note || '') : ''}</textarea>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label">付款週期</label>
-                    <select name="cycle" class="form-select">
-                        <option value="monthly" ${subscription && subscription.cycle === 'monthly' ? 'selected' : ''}>每月</option>
-                        <option value="yearly" ${subscription && subscription.cycle === 'yearly' ? 'selected' : ''}>每年</option>
-                        <option value="weekly" ${subscription && subscription.cycle === 'weekly' ? 'selected' : ''}>每週</option>
-                        <option value="quarterly" ${subscription && subscription.cycle === 'quarterly' ? 'selected' : ''}>每季</option>
-                    </select>
-                </div>
-                
                 <div class="form-actions">
                     <button type="button" class="btn btn-secondary" onclick="app.closeSubscriptionForm()">取消</button>
                     <button type="submit" class="btn btn-primary">${isEdit ? '更新' : '新增'}</button>
@@ -1245,7 +1221,6 @@ class App {
                 price: formData.get('price'),
                 shop: formData.get('shop'),
                 todate: formData.get('todate'),
-                status: formData.get('status'),
                 // 保持向後相容性
                 expiry: formData.get('todate'),
                 brand: formData.get('shop') // 將商店映射到品牌欄位以保持相容性
@@ -1299,7 +1274,6 @@ class App {
                 nextdate: formData.get('nextdate'),
                 site: formData.get('site'),
                 note: formData.get('note'),
-                cycle: formData.get('cycle'),
                 // 保持向後相容性
                 nextPayment: formData.get('nextdate'),
                 url: formData.get('site')
@@ -1415,10 +1389,6 @@ class App {
                         <div class="detail-value">${food.shop || food.brand || '未設定'}</div>
                     </div>
                     <div class="detail-item">
-                        <label>狀態</label>
-                        <div class="detail-value status-${food.status}">${food.status}</div>
-                    </div>
-                    <div class="detail-item">
                         <label>到期日期</label>
                         <div class="detail-value">${food.todate || food.expiry}</div>
                     </div>
@@ -1473,10 +1443,7 @@ class App {
                     <label>價格</label>
                     <div class="detail-value">${subscription.price}</div>
                 </div>
-                <div class="detail-item">
-                    <label>付款週期</label>
-                    <div class="detail-value">${this.getCycleLabel(subscription.cycle)}</div>
-                </div>
+
                 <div class="detail-item">
                     <label>網站網址</label>
                     <div class="detail-value">
@@ -1517,15 +1484,7 @@ class App {
         this.showModal('subscription-details-modal', `訂閱詳情 - ${subscription.name}`, detailsContent);
     }
 
-    getCycleLabel(cycle) {
-        const cycleLabels = {
-            'monthly': '每月',
-            'yearly': '每年',
-            'weekly': '每週',
-            'quarterly': '每季'
-        };
-        return cycleLabels[cycle] || '每月';
-    }
+
 
     playRandomSong() {
         if (!this.songManager) {
@@ -1712,10 +1671,6 @@ class App {
                     <div class="food-detail-item">
                         <div class="food-detail-label">價格</div>
                         <div class="food-detail-value">${food.price}</div>
-                    </div>
-                    <div class="food-detail-item">
-                        <div class="food-detail-label">狀態</div>
-                        <div class="food-detail-value status-${food.status}">${food.status}</div>
                     </div>
                     <div class="food-detail-item">
                         <div class="food-detail-label">到期日期</div>

@@ -361,14 +361,6 @@ class ComponentManager {
                     <input type="date" name="nextPayment" class="form-input" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">付款週期</label>
-                    <select name="cycle" class="form-select">
-                        <option value="monthly">每月</option>
-                        <option value="yearly">每年</option>
-                        <option value="weekly">每週</option>
-                    </select>
-                </div>
-                <div class="form-group">
                     <label class="form-label">備註</label>
                     <textarea name="notes" class="form-textarea"></textarea>
                 </div>

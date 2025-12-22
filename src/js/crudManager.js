@@ -94,12 +94,17 @@ class CrudManager {
             name: foodData.name || '未命名食品',
             brand: foodData.brand || '未知品牌',
             price: foodData.price || 'NT$ 0',
-            status: foodData.status || '良好',
             expiry: foodData.expiry || this.getDefaultExpiryDate(),
             daysLeft: this.calculateDaysLeft(foodData.expiry || this.getDefaultExpiryDate()),
             createdAt: new Date(),
             updatedAt: new Date(),
-            contentfulId: null // 用於追蹤 Contentful 條目 ID
+            contentfulId: null, // 用於追蹤 Contentful 條目 ID
+            // 新增欄位支援
+            amount: foodData.amount || 1,
+            todate: foodData.todate || foodData.expiry || this.getDefaultExpiryDate(),
+            shop: foodData.shop || foodData.brand || '未設定',
+            photo: foodData.photo || null,
+            photoHash: foodData.photoHash || null
         };
 
         this.foodItems.push(newFood);

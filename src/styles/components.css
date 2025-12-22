@@ -1409,26 +1409,6 @@
 }
 
 /* 狀態樣式 */
-.status-良好 {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.status-即將到期 {
-    color: #ffc107;
-    font-weight: 600;
-}
-
-.status-已過期 {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-.status-已用完 {
-    color: #6c757d;
-    font-weight: 600;
-}
-
 .status-活躍 {
     color: #28a745;
     font-weight: 600;
@@ -1875,26 +1855,7 @@
     border: 1px solid #e9ecef;
 }
 
-/* 狀態樣式增強 */
-.status-良好 {
-    color: #28a745;
-    font-weight: 600;
-}
-
-.status-即將到期 {
-    color: #ffc107;
-    font-weight: 600;
-}
-
-.status-已過期 {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-.status-已用完 {
-    color: #6c757d;
-    font-weight: 600;
-}
+/* 狀態樣式增強 - 僅保留訂閱相關 */
 
 /* 響應式設計增強 */
 @media (max-width: 768px) {

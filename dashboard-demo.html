@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儀表板功能演示 - 鋒兄AI資訊系統</title>
+    <link rel="stylesheet" href="src/styles/main.css">
+    <link rel="stylesheet" href="src/styles/components.css">
+    <link rel="stylesheet" href="src/styles/dashboard.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            margin: 0;
+            padding: 2rem;
+        }
+        
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .demo-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .demo-header h1 {
+            color: #1f2937;
+            margin: 0 0 1rem 0;
+            font-size: 2.5rem;
+        }
+        
+        .demo-header p {
+            color: #6b7280;
+            font-size: 1.1rem;
+            margin: 0;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+            transform: translateY(-1px);
+        }
+        
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+        
+        .demo-status {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .status-loading {
+            border-left-color: #f59e0b;
+        }
+        
+        .status-success {
+            border-left-color: #10b981;
+        }
+        
+        .status-error {
+            border-left-color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <div class="demo-header">
+            <h1>🎯 儀表板功能演示</h1>
+            <p>展示鋒兄AI資訊系統的儀表板統計、提醒和數據管理功能</p>
+        </div>
+        
+        <div class="demo-controls">
+            <button class="btn btn-primary" onclick="loadTestData()">📊 載入測試數據</button>
+            <button class="btn btn-secondary" onclick="refreshDashboard()">🔄 刷新儀表板</button>
+            <button class="btn btn-success" onclick="runTests()">🧪 執行測試</button>
+            <button class="btn btn-secondary" onclick="exportReport()">📋 導出報告</button>
+        </div>
+        
+        <div id="demo-status" class="demo-status">
+            <strong>狀態:</strong> 準備就緒，請點擊上方按鈕開始演示
+        </div>
+        
+        <!-- 儀表板內容 -->
+        <div class="dashboard-sections">
+            <div class="dashboard-section">
+                <h3>📊 訂閱管理統計</h3>
+                <div class="stats-grid">
+                    <div class="stat-card stat-primary">
+                        <div class="stat-number" id="sub-total">0</div>
+                        <div class="stat-label">總訂閱數</div>
+                    </div>
+                    <div class="stat-card stat-danger">
+                        <div class="stat-number" id="sub-3days">0</div>
+                        <div class="stat-label">3天內到期</div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-number" id="sub-7days">0</div>
+                        <div class="stat-label">7天內到期</div>
+                    </div>
+                    <div class="stat-card stat-error">
+                        <div class="stat-number" id="sub-expired">0</div>
+                        <div class="stat-label">已過期</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-section">
+                <h3>🍎 食品管理統計</h3>
+                <div class="stats-grid">
+                    <div class="stat-card stat-primary">
+                        <div class="stat-number" id="food-total">0</div>
+                        <div class="stat-label">總食品數</div>
+                    </div>
+                    <div class="stat-card stat-warning">
+                        <div class="stat-number" id="food-7days">0</div>
+                        <div class="stat-label">7天內到期</div>
+                    </div>
+                    <div class="stat-card stat-info">
+                        <div class="stat-number" id="food-30days">0</div>
+                        <div class="stat-label">30天內到期</div>
+                    </div>
+                    <div class="stat-card stat-error">
+                        <div class="stat-number" id="food-expired">0</div>
+                        <div class="stat-label">已過期</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-alerts">
+                <div class="alert-section">
+                    <h3>⚠️ 訂閱到期提醒</h3>
+                    <div class="alert-list" id="subscription-alerts">
+                        <div class="alert-item alert-info">
+                            <span class="alert-icon">📋</span>
+                            <span class="alert-text">尚未載入數據</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert-section">
+                    <h3>🍎 食品到期提醒</h3>
+                    <div class="alert-list" id="food-alerts">
+                        <div class="alert-item alert-info">
+                            <span class="alert-icon">📋</span>
+                            <span class="alert-text">尚未載入數據</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入必要的腳本 -->
+    <script src="src/js/contentfulManager.js"></script>
+    <script src="src/js/crudManager.js"></script>
+    <script src="src/js/dashboardManager.js"></script>
+    <script src="test-dashboard.js"></script>
+    
+    <script>
+        // 演示用的測試數據
+        const demoData = {
+            subscriptions: [
+                {
+                    id: 'demo-sub1',
+                    name: 'Netflix 訂閱',
+                    expiryDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    price: 390,
+                    category: '娛樂'
+                },
+                {
+                    id: 'demo-sub2',
+                    name: 'Spotify Premium',
+                    expiryDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
+                    price: 149,
+                    category: '音樂'
+                },
+                {
+                    id: 'demo-sub3',
+                    name: 'Adobe Creative Cloud',
+                    expiryDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                    price: 1680,
+                    category: '工具'
+                },
+                {
+                    id: 'demo-sub4',
+                    name: 'Microsoft 365',
+                    expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+                    price: 2190,
+                    category: '辦公'
+                }
+            ],
+            foodItems: [
+                {
+                    id: 'demo-food1',
+                    name: '牛奶',
+                    expiryDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+                    category: '乳製品',
+                    location: '冰箱'
+                },
+                {
+                    id: 'demo-food2',
+                    name: '麵包',
+                    expiryDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString(),
+                    category: '主食',
+                    location: '廚房'
+                },
+                {
+                    id: 'demo-food3',
+                    name: '優格',
+                    expiryDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    category: '乳製品',
+                    location: '冰箱'
+                },
+                {
+                    id: 'demo-food4',
+                    name: '蘋果',
+                    expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                    category: '水果',
+                    location: '冰箱'
+                },
+                {
+                    id: 'demo-food5',
+                    name: '雞蛋',
+                    expiryDate: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000).toISOString(),
+                    category: '蛋類',
+                    location: '冰箱'
+                }
+            ]
+        };
+        
+        // 狀態更新函數
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('demo-status');
+            statusEl.innerHTML = `<strong>狀態:</strong> ${message}`;
+            statusEl.className = `demo-status status-${type}`;
+        }
+        
+        // 載入測試數據
+        function loadTestData() {
+            updateStatus('載入測試數據中...', 'loading');
+            
+            try {
+                // 創建模擬的 CRUD 管理器
+                if (!window.crudManager) {
+                    window.crudManager = {
+                        subscriptions: [],
+                        foodItems: []
+                    };
+                }
+                
+                // 載入測試數據
+                window.crudManager.subscriptions = demoData.subscriptions;
+                window.crudManager.foodItems = demoData.foodItems;
+                
+                updateStatus(`測試數據載入完成！訂閱: ${demoData.subscriptions.length} 個，食品: ${demoData.foodItems.length} 個`, 'success');
+                
+                // 自動刷新儀表板
+                setTimeout(() => refreshDashboard(), 500);
+                
+            } catch (error) {
+                console.error('載入測試數據失敗:', error);
+                updateStatus('載入測試數據失敗: ' + error.message, 'error');
+            }
+        }
+        
+        // 刷新儀表板
+        function refreshDashboard() {
+            updateStatus('刷新儀表板數據中...', 'loading');
+            
+            try {
+                // 手動計算統計數據
+                const now = new Date();
+                const subscriptions = window.crudManager?.subscriptions || [];
+                const foodItems = window.crudManager?.foodItems || [];
+                
+                // 訂閱統計
+                const subStats = {
+                    total: subscriptions.length,
+                    expiring3Days: subscriptions.filter(sub => {
+                        const expiryDate = new Date(sub.expiryDate);
+                        const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                        return diffDays > 0 && diffDays <= 3;
+                    }).length,
+                    expiring7Days: subscriptions.filter(sub => {
+                        const expiryDate = new Date(sub.expiryDate);
+                        const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                        return diffDays > 0 && diffDays <= 7;
+                    }).length,
+                    expired: subscriptions.filter(sub => {
+                        const expiryDate = new Date(sub.expiryDate);
+                        return expiryDate < now;
+                    }).length
+                };
+                
+                // 食品統計
+                const foodStats = {
+                    total: foodItems.length,
+                    expiring7Days: foodItems.filter(food => {
+                        const expiryDate = new Date(food.expiryDate);
+                        const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                        return diffDays > 0 && diffDays <= 7;
+                    }).length,
+                    expiring30Days: foodItems.filter(food => {
+                        const expiryDate = new Date(food.expiryDate);
+                        const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                        return diffDays > 0 && diffDays <= 30;
+                    }).length,
+                    expired: foodItems.filter(food => {
+                        const expiryDate = new Date(food.expiryDate);
+                        return expiryDate < now;
+                    }).length
+                };
+                
+                // 更新UI
+                document.getElementById('sub-total').textContent = subStats.total;
+                document.getElementById('sub-3days').textContent = subStats.expiring3Days;
+                document.getElementById('sub-7days').textContent = subStats.expiring7Days;
+                document.getElementById('sub-expired').textContent = subStats.expired;
+                
+                document.getElementById('food-total').textContent = foodStats.total;
+                document.getElementById('food-7days').textContent = foodStats.expiring7Days;
+                document.getElementById('food-30days').textContent = foodStats.expiring30Days;
+                document.getElementById('food-expired').textContent = foodStats.expired;
+                
+                // 更新提醒
+                updateAlerts(subscriptions, foodItems, now);
+                
+                updateStatus('儀表板數據刷新完成！', 'success');
+                
+            } catch (error) {
+                console.error('刷新儀表板失敗:', error);
+                updateStatus('刷新儀表板失敗: ' + error.message, 'error');
+            }
+        }
+        
+        // 更新提醒
+        function updateAlerts(subscriptions, foodItems, now) {
+            // 訂閱提醒
+            const subAlerts = subscriptions
+                .filter(sub => {
+                    const expiryDate = new Date(sub.expiryDate);
+                    const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                    return diffDays <= 7;
+                })
+                .map(sub => {
+                    const expiryDate = new Date(sub.expiryDate);
+                    const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    let status = 'warning';
+                    let message = '';
+                    
+                    if (diffDays < 0) {
+                        status = 'danger';
+                        message = `已過期 ${Math.abs(diffDays)} 天`;
+                    } else if (diffDays === 0) {
+                        status = 'danger';
+                        message = '今天到期';
+                    } else if (diffDays <= 3) {
+                        status = 'danger';
+                        message = `${diffDays} 天後到期`;
+                    } else {
+                        status = 'warning';
+                        message = `${diffDays} 天後到期`;
+                    }
+                    
+                    return { ...sub, status, message };
+                });
+            
+            // 食品提醒
+            const foodAlerts = foodItems
+                .filter(food => {
+                    const expiryDate = new Date(food.expiryDate);
+                    const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                    return diffDays <= 30;
+                })
+                .map(food => {
+                    const expiryDate = new Date(food.expiryDate);
+                    const diffDays = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+                    
+                    let status = 'info';
+                    let message = '';
+                    
+                    if (diffDays < 0) {
+                        status = 'danger';
+                        message = `已過期 ${Math.abs(diffDays)} 天`;
+                    } else if (diffDays === 0) {
+                        status = 'danger';
+                        message = '今天到期';
+                    } else if (diffDays <= 7) {
+                        status = 'warning';
+                        message = `${diffDays} 天後到期`;
+                    } else {
+                        status = 'info';
+                        message = `${diffDays} 天後到期`;
+                    }
+                    
+                    return { ...food, status, message };
+                });
+            
+            // 更新訂閱提醒UI
+            const subAlertsEl = document.getElementById('subscription-alerts');
+            if (subAlerts.length === 0) {
+                subAlertsEl.innerHTML = `
+                    <div class="alert-item alert-success">
+                        <span class="alert-icon">✅</span>
+                        <span class="alert-text">目前沒有訂閱到期提醒</span>
+                    </div>
+                `;
+            } else {
+                subAlertsEl.innerHTML = subAlerts.map(alert => `
+                    <div class="alert-item alert-${alert.status}">
+                        <span class="alert-icon">${getAlertIcon(alert.status)}</span>
+                        <div class="alert-content">
+                            <div class="alert-title">${alert.name}</div>
+                            <div class="alert-message">${alert.message}</div>
+                            <div class="alert-date">到期日: ${new Date(alert.expiryDate).toLocaleDateString('zh-TW')}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // 更新食品提醒UI
+            const foodAlertsEl = document.getElementById('food-alerts');
+            if (foodAlerts.length === 0) {
+                foodAlertsEl.innerHTML = `
+                    <div class="alert-item alert-success">
+                        <span class="alert-icon">✅</span>
+                        <span class="alert-text">目前沒有食品到期提醒</span>
+                    </div>
+                `;
+            } else {
+                foodAlertsEl.innerHTML = foodAlerts.map(alert => `
+                    <div class="alert-item alert-${alert.status}">
+                        <span class="alert-icon">${getAlertIcon(alert.status)}</span>
+                        <div class="alert-content">
+                            <div class="alert-title">${alert.name}</div>
+                            <div class="alert-message">${alert.message}</div>
+                            <div class="alert-date">到期日: ${new Date(alert.expiryDate).toLocaleDateString('zh-TW')}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // 獲取提醒圖標
+        function getAlertIcon(status) {
+            switch (status) {
+                case 'danger': return '🚨';
+                case 'warning': return '⚠️';
+                case 'info': return 'ℹ️';
+                default: return '📋';
+            }
+        }
+        
+        // 執行測試
+        function runTests() {
+            updateStatus('執行儀表板測試中...', 'loading');
+            
+            try {
+                // 確保有測試數據
+                if (!window.crudManager || !window.crudManager.subscriptions.length) {
+                    loadTestData();
+                    setTimeout(() => runTests(), 1000);
+                    return;
+                }
+                
+                // 執行測試
+                const results = {
+                    dataLoaded: !!(window.crudManager && window.crudManager.subscriptions.length > 0),
+                    uiUpdated: document.getElementById('sub-total').textContent !== '0',
+                    alertsGenerated: document.getElementById('subscription-alerts').children.length > 0
+                };
+                
+                const success = Object.values(results).every(r => r);
+                
+                if (success) {
+                    updateStatus('所有測試通過！儀表板功能正常運作', 'success');
+                } else {
+                    updateStatus('部分測試失敗，請檢查控制台', 'error');
+                }
+                
+                console.log('🧪 測試結果:', results);
+                
+            } catch (error) {
+                console.error('執行測試失敗:', error);
+                updateStatus('執行測試失敗: ' + error.message, 'error');
+            }
+        }
+        
+        // 導出報告
+        function exportReport() {
+            updateStatus('生成報告中...', 'loading');
+            
+            try {
+                const report = {
+                    timestamp: new Date().toISOString(),
+                    data: {
+                        subscriptions: window.crudManager?.subscriptions || [],
+                        foodItems: window.crudManager?.foodItems || []
+                    },
+                    stats: {
+                        subscriptionTotal: document.getElementById('sub-total').textContent,
+                        foodTotal: document.getElementById('food-total').textContent
+                    }
+                };
+                
+                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `dashboard-demo-report-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                URL.revokeObjectURL(url);
+                
+                updateStatus('報告已導出！', 'success');
+                
+            } catch (error) {
+                console.error('導出報告失敗:', error);
+                updateStatus('導出報告失敗: ' + error.message, 'error');
+            }
+        }
+        
+        // 頁面載入完成後的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus('演示頁面載入完成，請點擊按鈕開始演示', 'success');
+            
+            // 提供控制台命令提示
+            console.log('🎯 儀表板演示頁面已載入');
+            console.log('💡 可用命令:');
+            console.log('   loadTestData()    // 載入測試數據');
+            console.log('   refreshDashboard() // 刷新儀表板');
+            console.log('   runTests()        // 執行測試');
+            console.log('   exportReport()    // 導出報告');
+        });
+    </script>
+</body>
+</html>

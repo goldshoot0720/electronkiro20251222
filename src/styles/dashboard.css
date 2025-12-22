@@ -1,0 +1,361 @@
+/* 儀表板專用樣式 */
+
+.dashboard-sections {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 1rem 0;
+}
+
+.dashboard-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.dashboard-section h3 {
+    margin: 0 0 1rem 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card {
+    background: #f8fafc;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: #6b7280;
+    transition: background 0.3s ease;
+}
+
+/* 統計卡片顏色主題 */
+.stat-card.stat-primary::before {
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+}
+
+.stat-card.stat-success::before {
+    background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.stat-card.stat-warning::before {
+    background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.stat-card.stat-danger::before {
+    background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.stat-card.stat-error::before {
+    background: linear-gradient(90deg, #dc2626, #b91c1c);
+}
+
+.stat-card.stat-info::before {
+    background: linear-gradient(90deg, #06b6d4, #0891b2);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* 提醒區域 */
+.dashboard-alerts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+@media (max-width: 768px) {
+    .dashboard-alerts {
+        grid-template-columns: 1fr;
+    }
+}
+
+.alert-section {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e5e7eb;
+}
+
+.alert-section h3 {
+    margin: 0 0 1rem 0;
+    color: #1f2937;
+    font-size: 1.1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.alert-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.alert-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #6b7280;
+    background: #f8fafc;
+    transition: all 0.2s ease;
+}
+
+.alert-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 提醒狀態顏色 */
+.alert-item.alert-success {
+    border-left-color: #10b981;
+    background: #ecfdf5;
+}
+
+.alert-item.alert-info {
+    border-left-color: #06b6d4;
+    background: #ecfeff;
+}
+
+.alert-item.alert-warning {
+    border-left-color: #f59e0b;
+    background: #fffbeb;
+}
+
+.alert-item.alert-danger {
+    border-left-color: #ef4444;
+    background: #fef2f2;
+}
+
+.alert-icon {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.alert-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.alert-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 0.25rem;
+}
+
+.alert-message {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.alert-date {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+.alert-text {
+    color: #6b7280;
+    font-size: 0.875rem;
+}
+
+.alert-action {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+}
+
+.alert-action:hover {
+    background: #2563eb;
+}
+
+/* 頁面標題區域 */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-header h2 {
+    margin: 0 0 0.5rem 0;
+    color: #1f2937;
+    font-size: 1.875rem;
+    font-weight: 700;
+}
+
+.page-header p {
+    margin: 0 0 1rem 0;
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+.header-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* 載入動畫 */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.stat-number.loading {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* 響應式設計 */
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-sections {
+        gap: 1rem;
+    }
+    
+    .dashboard-section {
+        padding: 1rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-number {
+        font-size: 1.75rem;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+    }
+    
+    .header-actions .btn {
+        width: 100%;
+    }
+}
+
+/* 深色模式支援 */
+@media (prefers-color-scheme: dark) {
+    .dashboard-section,
+    .alert-section {
+        background: #1f2937;
+        border-color: #374151;
+    }
+    
+    .dashboard-section h3,
+    .alert-section h3,
+    .alert-title {
+        color: #f9fafb;
+    }
+    
+    .stat-card {
+        background: #374151;
+        border-color: #4b5563;
+    }
+    
+    .stat-number {
+        color: #f9fafb;
+    }
+    
+    .stat-label,
+    .alert-message,
+    .alert-text {
+        color: #d1d5db;
+    }
+    
+    .alert-date {
+        color: #9ca3af;
+    }
+    
+    .alert-item {
+        background: #374151;
+    }
+    
+    .alert-item.alert-success {
+        background: #064e3b;
+    }
+    
+    .alert-item.alert-info {
+        background: #164e63;
+    }
+    
+    .alert-item.alert-warning {
+        background: #78350f;
+    }
+    
+    .alert-item.alert-danger {
+        background: #7f1d1d;
+    }
+}

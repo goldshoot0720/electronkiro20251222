@@ -1,0 +1,87 @@
+{
+  "exportTime": "2025-12-22T14:29:47.950Z",
+  "items": [
+    {
+      "id": 1766413689403,
+      "action": "create",
+      "type": "food",
+      "data": {
+        "name": "測試食品 - 替代方案",
+        "brand": "測試品牌",
+        "expiry": "2025-12-31"
+      },
+      "timestamp": "2025-12-22T14:28:09.403Z",
+      "synced": false
+    },
+    {
+      "id": 1766413689406,
+      "action": "create",
+      "type": "subscription",
+      "data": {
+        "name": "測試訂閱 - 替代方案",
+        "url": "https://example.com",
+        "price": "NT$ 99",
+        "nextPayment": "2025-12-31"
+      },
+      "timestamp": "2025-12-22T14:28:09.406Z",
+      "synced": false
+    },
+    {
+      "id": 1766413787585,
+      "action": "create",
+      "type": "food",
+      "data": {
+        "id": 3,
+        "name": "測試食品 - 完整同步 下午10:29:46",
+        "brand": "測試品牌",
+        "price": "NT$ 88",
+        "status": "良好",
+        "expiry": "2025-12-31",
+        "daysLeft": 9,
+        "createdAt": "2025-12-22T14:29:46.246Z",
+        "updatedAt": "2025-12-22T14:29:46.246Z",
+        "contentfulId": null,
+        "syncQueueId": 1766413787585
+      },
+      "timestamp": "2025-12-22T14:29:47.585Z",
+      "synced": false
+    },
+    {
+      "id": 1766413787947,
+      "action": "create",
+      "type": "subscription",
+      "data": {
+        "id": 2,
+        "name": "測試訂閱 - 完整同步 下午10:29:47",
+        "url": "https://test-sync.example.com",
+        "price": "NT$ 299",
+        "nextPayment": "2025-12-31",
+        "daysLeft": 9,
+        "status": "活躍",
+        "createdAt": "2025-12-22T14:29:47.588Z",
+        "updatedAt": "2025-12-22T14:29:47.588Z",
+        "contentfulId": null,
+        "syncQueueId": 1766413787947
+      },
+      "timestamp": "2025-12-22T14:29:47.947Z",
+      "synced": false
+    }
+  ],
+  "instructions": {
+    "food": "請在 Contentful 後台手動創建 'food' 類型的條目",
+    "subscription": "請在 Contentful 後台手動創建 'subscription' 類型的條目",
+    "fields": {
+      "food": [
+        "name",
+        "amount",
+        "todate"
+      ],
+      "subscription": [
+        "name",
+        "price",
+        "nextdate",
+        "site"
+      ]
+    }
+  }
+}

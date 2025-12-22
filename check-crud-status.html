@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD 管理器狀態檢查</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        .status-label {
+            font-weight: bold;
+        }
+        .status-value {
+            color: #666;
+        }
+        .status-ok {
+            color: #4CAF50;
+        }
+        .status-error {
+            color: #f44336;
+        }
+        .btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1976D2;
+        }
+        h1 {
+            color: #333;
+        }
+        #log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 CRUD 管理器狀態檢查</h1>
+    
+    <div class="status-card">
+        <h2>系統狀態</h2>
+        <div class="status-item">
+            <span class="status-label">App 實例:</span>
+            <span class="status-value" id="app-status">檢查中...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">CRUD 管理器:</span>
+            <span class="status-value" id="crud-status">檢查中...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">初始化狀態:</span>
+            <span class="status-value" id="init-status">檢查中...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">食品數量:</span>
+            <span class="status-value" id="food-count">檢查中...</span>
+        </div>
+        <div class="status-item">
+            <span class="status-label">訂閱數量:</span>
+            <span class="status-value" id="subscription-count">檢查中...</span>
+        </div>
+    </div>
+
+    <div class="status-card">
+        <h2>測試功能</h2>
+        <button class="btn" onclick="checkStatus()">重新檢查狀態</button>
+        <button class="btn" onclick="testCreate()">測試新增</button>
+        <button class="btn" onclick="testShowForms()">測試表單顯示</button>
+        <button class="btn" onclick="testDelete()">測試刪除</button>
+        <button class="btn" onclick="reinitialize()">重新初始化</button>
+    </div>
+
+    <div id="log"></div>
+
+    <script>
+        let logMessages = [];
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = type === 'error' ? '❌' : type === 'success' ? '✅' : 'ℹ️';
+            const logMessage = `[${timestamp}] ${prefix} ${message}`;
+            logMessages.push(logMessage);
+            
+            const logElement = document.getElementById('log');
+            logElement.innerHTML = logMessages.slice(-20).join('<br>');
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function checkStatus() {
+            log('開始檢查系統狀態...');
+
+            // 檢查 App 實例
+            if (typeof app !== 'undefined') {
+                document.getElementById('app-status').innerHTML = '<span class="status-ok">✓ 已載入</span>';
+                log('App 實例已載入', 'success');
+
+                // 檢查 CRUD 管理器
+                if (app.crudManager) {
+                    document.getElementById('crud-status').innerHTML = '<span class="status-ok">✓ 已初始化</span>';
+                    log('CRUD 管理器已初始化', 'success');
+
+                    // 檢查初始化狀態
+                    if (app.crudManagerInitialized) {
+                        document.getElementById('init-status').innerHTML = '<span class="status-ok">✓ 完全初始化</span>';
+                        log('CRUD 管理器完全初始化', 'success');
+                    } else {
+                        document.getElementById('init-status').innerHTML = '<span class="status-error">✗ 未完全初始化</span>';
+                        log('CRUD 管理器未完全初始化', 'error');
+                    }
+
+                    // 檢查資料數量
+                    const foodCount = app.crudManager.foodItems.length;
+                    const subCount = app.crudManager.subscriptions.length;
+                    
+                    document.getElementById('food-count').textContent = foodCount;
+                    document.getElementById('subscription-count').textContent = subCount;
+                    
+                    log(`食品數量: ${foodCount}`, 'info');
+                    log(`訂閱數量: ${subCount}`, 'info');
+                } else {
+                    document.getElementById('crud-status').innerHTML = '<span class="status-error">✗ 未初始化</span>';
+                    document.getElementById('init-status').innerHTML = '<span class="status-error">✗ 未初始化</span>';
+                    log('CRUD 管理器未初始化', 'error');
+                }
+            } else {
+                document.getElementById('app-status').innerHTML = '<span class="status-error">✗ 未載入</span>';
+                log('App 實例未載入', 'error');
+            }
+        }
+
+        async function testCreate() {
+            if (!app || !app.crudManager) {
+                log('無法測試：CRUD 管理器未初始化', 'error');
+                return;
+            }
+
+            log('測試新增食品...');
+            const result = await app.crudManager.createFood({
+                name: '測試食品 - ' + new Date().toLocaleTimeString(),
+                brand: '測試品牌',
+                price: 'NT$ 1',
+                status: '良好',
+                expiry: '2025-12-31'
+            });
+
+            if (result.success) {
+                log(`新增成功！ID: ${result.data.id}`, 'success');
+                checkStatus();
+            } else {
+                log('新增失敗', 'error');
+            }
+        }
+
+        async function testDelete() {
+            if (!app || !app.crudManager) {
+                log('無法測試：CRUD 管理器未初始化', 'error');
+                return;
+            }
+
+            const foods = app.crudManager.readAllFood();
+            if (foods.length === 0) {
+                log('沒有食品可以刪除', 'error');
+                return;
+            }
+
+            const lastFood = foods[foods.length - 1];
+            log(`嘗試刪除食品：${lastFood.name} (ID: ${lastFood.id})`);
+
+            const result = app.crudManager.deleteFood(lastFood.id);
+            if (result.success) {
+                log('刪除成功！', 'success');
+                checkStatus();
+            } else {
+                log(`刪除失敗：${result.message}`, 'error');
+            }
+        }
+
+        async function testShowForms() {
+            if (!app || !app.crudManager) {
+                log('無法測試：CRUD 管理器未初始化', 'error');
+                return;
+            }
+
+            log('測試表單顯示功能...');
+            
+            // 測試新增食品表單
+            try {
+                log('測試顯示新增食品表單...');
+                app.showFoodForm();
+                log('新增食品表單顯示成功', 'success');
+                
+                // 關閉模態框
+                setTimeout(() => {
+                    const modal = document.querySelector('.modal');
+                    if (modal) modal.remove();
+                }, 1000);
+            } catch (error) {
+                log(`顯示食品表單失敗：${error.message}`, 'error');
+            }
+
+            // 測試新增訂閱表單
+            setTimeout(() => {
+                try {
+                    log('測試顯示新增訂閱表單...');
+                    app.showSubscriptionForm();
+                    log('新增訂閱表單顯示成功', 'success');
+                    
+                    // 關閉模態框
+                    setTimeout(() => {
+                        const modal = document.querySelector('.modal');
+                        if (modal) modal.remove();
+                    }, 1000);
+                } catch (error) {
+                    log(`顯示訂閱表單失敗：${error.message}`, 'error');
+                }
+            }, 1500);
+        }
+
+        async function reinitialize() {
+            if (!app) {
+                log('App 實例未載入', 'error');
+                return;
+            }
+
+            log('重新初始化 CRUD 管理器...');
+            await app.initCrudManager();
+            log('重新初始化完成', 'success');
+            checkStatus();
+        }
+
+        // 頁面載入時自動檢查
+        window.addEventListener('load', () => {
+            setTimeout(checkStatus, 1000);
+        });
+    </script>
+</body>
+</html>

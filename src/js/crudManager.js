@@ -144,7 +144,7 @@ class CrudManager {
     }
 
     // 更新食品
-    updateFood(id, updateData) {
+    async updateFood(id, updateData) {
         const index = this.foodItems.findIndex(item => item.id === parseInt(id));
         
         if (index === -1) {
@@ -160,11 +160,43 @@ class CrudManager {
 
         this.foodItems[index] = updatedFood;
         console.log('更新食品:', updatedFood);
+
+        // 嘗試同步到 Contentful
+        if (this.contentfulManager && this.isOnline && updatedFood.contentfulId) {
+            try {
+                const result = await this.contentfulManager.updateFoodEntry(updatedFood.contentfulId, updatedFood);
+                if (result.success) {
+                    console.log('✅ 食品更新已同步到 Contentful:', updatedFood.contentfulId);
+                } else {
+                    console.warn('⚠️ 食品更新同步到 Contentful 失敗:', result.error);
+                    // 加入本地同步佇列作為備用方案
+                    if (this.localSyncManager) {
+                        const syncId = this.localSyncManager.addUpdateToSyncQueue('food', updatedFood);
+                        updatedFood.syncQueueId = syncId;
+                        console.log('📝 已加入更新同步佇列:', syncId);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ 同步食品更新到 Contentful 時發生錯誤:', error);
+                // 加入本地同步佇列作為備用方案
+                if (this.localSyncManager) {
+                    const syncId = this.localSyncManager.addUpdateToSyncQueue('food', updatedFood);
+                    updatedFood.syncQueueId = syncId;
+                    console.log('📝 已加入更新同步佇列:', syncId);
+                }
+            }
+        } else if (this.localSyncManager) {
+            // 如果沒有 Contentful 連接，直接加入本地同步佇列
+            const syncId = this.localSyncManager.addUpdateToSyncQueue('food', updatedFood);
+            updatedFood.syncQueueId = syncId;
+            console.log('📝 已加入更新同步佇列:', syncId);
+        }
+
         return { success: true, data: updatedFood, message: '食品更新成功' };
     }
 
     // 刪除食品
-    deleteFood(id) {
+    async deleteFood(id) {
         const index = this.foodItems.findIndex(item => item.id === parseInt(id));
         
         if (index === -1) {
@@ -173,6 +205,35 @@ class CrudManager {
 
         const deletedFood = this.foodItems.splice(index, 1)[0];
         console.log('刪除食品:', deletedFood);
+
+        // 嘗試從 Contentful 刪除
+        if (this.contentfulManager && this.isOnline && deletedFood.contentfulId) {
+            try {
+                const result = await this.contentfulManager.deleteEntry(deletedFood.contentfulId);
+                if (result.success) {
+                    console.log('✅ 食品已從 Contentful 刪除:', deletedFood.contentfulId);
+                } else {
+                    console.warn('⚠️ 從 Contentful 刪除食品失敗:', result.error);
+                    // 加入本地同步佇列作為備用方案
+                    if (this.localSyncManager) {
+                        const syncId = this.localSyncManager.addDeleteToSyncQueue('food', deletedFood.contentfulId);
+                        console.log('📝 已加入刪除同步佇列:', syncId);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ 從 Contentful 刪除食品時發生錯誤:', error);
+                // 加入本地同步佇列作為備用方案
+                if (this.localSyncManager) {
+                    const syncId = this.localSyncManager.addDeleteToSyncQueue('food', deletedFood.contentfulId);
+                    console.log('📝 已加入刪除同步佇列:', syncId);
+                }
+            }
+        } else if (this.localSyncManager && deletedFood.contentfulId) {
+            // 如果沒有 Contentful 連接，直接加入本地同步佇列
+            const syncId = this.localSyncManager.addDeleteToSyncQueue('food', deletedFood.contentfulId);
+            console.log('📝 已加入刪除同步佇列:', syncId);
+        }
+
         return { success: true, data: deletedFood, message: '食品刪除成功' };
     }
 
@@ -264,7 +325,7 @@ class CrudManager {
     }
 
     // 刪除訂閱
-    deleteSubscription(id) {
+    async deleteSubscription(id) {
         const index = this.subscriptions.findIndex(item => item.id === parseInt(id));
         
         if (index === -1) {
@@ -273,6 +334,35 @@ class CrudManager {
 
         const deletedSubscription = this.subscriptions.splice(index, 1)[0];
         console.log('刪除訂閱:', deletedSubscription);
+
+        // 嘗試從 Contentful 刪除
+        if (this.contentfulManager && this.isOnline && deletedSubscription.contentfulId) {
+            try {
+                const result = await this.contentfulManager.deleteEntry(deletedSubscription.contentfulId);
+                if (result.success) {
+                    console.log('✅ 訂閱已從 Contentful 刪除:', deletedSubscription.contentfulId);
+                } else {
+                    console.warn('⚠️ 從 Contentful 刪除訂閱失敗:', result.error);
+                    // 加入本地同步佇列作為備用方案
+                    if (this.localSyncManager) {
+                        const syncId = this.localSyncManager.addDeleteToSyncQueue('subscription', deletedSubscription.contentfulId);
+                        console.log('📝 已加入刪除同步佇列:', syncId);
+                    }
+                }
+            } catch (error) {
+                console.error('❌ 從 Contentful 刪除訂閱時發生錯誤:', error);
+                // 加入本地同步佇列作為備用方案
+                if (this.localSyncManager) {
+                    const syncId = this.localSyncManager.addDeleteToSyncQueue('subscription', deletedSubscription.contentfulId);
+                    console.log('📝 已加入刪除同步佇列:', syncId);
+                }
+            }
+        } else if (this.localSyncManager && deletedSubscription.contentfulId) {
+            // 如果沒有 Contentful 連接，直接加入本地同步佇列
+            const syncId = this.localSyncManager.addDeleteToSyncQueue('subscription', deletedSubscription.contentfulId);
+            console.log('📝 已加入刪除同步佇列:', syncId);
+        }
+
         return { success: true, data: deletedSubscription, message: '訂閱刪除成功' };
     }
 

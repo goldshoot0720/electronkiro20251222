@@ -930,11 +930,14 @@ ${song.lyrics}
     showFoodForm(foodId = null) {
         // 檢查 CRUD 管理器是否已初始化
         if (!this.crudManager || !this.crudManagerInitialized) {
-            this.showNotification('CRUD 管理器未初始化，請稍後再試', 'error');
+            this.showNotification('CRUD 管理器未初始化，正在嘗試修復...', 'warning');
             console.error('CRUD 管理器狀態:', {
                 crudManager: !!this.crudManager,
                 initialized: this.crudManagerInitialized
             });
+            
+            // 顯示修復選項彈跳窗
+            this.showCRUDFixModal('food', foodId);
             return;
         }
 
@@ -956,7 +959,7 @@ ${song.lyrics}
                     <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <form id="food-form" onsubmit="app.saveFoodForm(event, ${foodId})">
+                    <form id="food-form">
                         <div class="form-group">
                             <label for="food-name">食品名稱 *</label>
                             <input type="text" id="food-name" name="name" required 
@@ -996,6 +999,12 @@ ${song.lyrics}
         `;
         document.body.appendChild(modal);
         
+        // 添加表單提交事件監聽器
+        const form = modal.querySelector('#food-form');
+        form.addEventListener('submit', (event) => {
+            this.saveFoodForm(event, foodId);
+        });
+        
         // 聚焦到第一個輸入框
         setTimeout(() => {
             const firstInput = modal.querySelector('input[type="text"]');
@@ -1004,7 +1013,7 @@ ${song.lyrics}
     }
 
     // 儲存食品表單
-    saveFoodForm(event, foodId = null) {
+    async saveFoodForm(event, foodId = null) {
         event.preventDefault();
         
         // 檢查 CRUD 管理器是否已初始化
@@ -1014,8 +1023,20 @@ ${song.lyrics}
                 crudManager: !!this.crudManager,
                 initialized: this.crudManagerInitialized
             });
+            
+            // 即使初始化失敗也要關閉彈跳窗
+            const modal = event.target.closest('.modal');
+            if (modal) {
+                setTimeout(() => modal.remove(), 2000); // 2秒後自動關閉
+            }
             return;
         }
+
+        // 顯示載入狀態
+        const submitBtn = event.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.textContent = '儲存中...';
 
         const formData = new FormData(event.target);
         const foodData = {
@@ -1031,7 +1052,7 @@ ${song.lyrics}
             if (foodId) {
                 result = this.crudManager.updateFood(foodId, foodData);
             } else {
-                result = this.crudManager.createFood(foodData);
+                result = await this.crudManager.createFood(foodData);
             }
 
             if (result.success) {
@@ -1043,10 +1064,23 @@ ${song.lyrics}
                 if (modal) modal.remove();
             } else {
                 this.showNotification(result.message, 'error');
+                
+                // 恢復按鈕狀態
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
             }
         } catch (error) {
             console.error('儲存食品時發生錯誤:', error);
             this.showNotification('儲存食品時發生錯誤', 'error');
+            
+            // 恢復按鈕狀態
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    }
+            if (modal) {
+                setTimeout(() => modal.remove(), 2000); // 2秒後自動關閉
+            }
         }
     }
 
@@ -1056,7 +1090,7 @@ ${song.lyrics}
     }
 
     // 刪除食品
-    deleteFood(foodId) {
+    async deleteFood(foodId) {
         // 檢查 CRUD 管理器是否已初始化
         if (!this.crudManager || !this.crudManagerInitialized) {
             this.showNotification('CRUD 管理器未初始化，請稍後再試', 'error');
@@ -1075,7 +1109,7 @@ ${song.lyrics}
 
         if (confirm(`確定要刪除食品「${food.name}」嗎？`)) {
             try {
-                const result = this.crudManager.deleteFood(foodId);
+                const result = await this.crudManager.deleteFood(foodId);
                 
                 if (result.success) {
                     this.showNotification(result.message, 'success');
@@ -1261,11 +1295,14 @@ ${song.lyrics}
     showSubscriptionForm(subscriptionId = null) {
         // 檢查 CRUD 管理器是否已初始化
         if (!this.crudManager || !this.crudManagerInitialized) {
-            this.showNotification('CRUD 管理器未初始化，請稍後再試', 'error');
+            this.showNotification('CRUD 管理器未初始化，正在嘗試修復...', 'warning');
             console.error('CRUD 管理器狀態:', {
                 crudManager: !!this.crudManager,
                 initialized: this.crudManagerInitialized
             });
+            
+            // 顯示修復選項彈跳窗
+            this.showCRUDFixModal('subscription', subscriptionId);
             return;
         }
 
@@ -1324,6 +1361,12 @@ ${song.lyrics}
             if (firstInput) firstInput.focus();
         }, 100);
     }
+        // 聚焦到第一個輸入框
+        setTimeout(() => {
+            const firstInput = modal.querySelector('input[type="text"]');
+            if (firstInput) firstInput.focus();
+        }, 100);
+    }
 
     // 儲存訂閱表單
     saveSubscriptionForm(event, subscriptionId = null) {
@@ -1336,6 +1379,12 @@ ${song.lyrics}
                 crudManager: !!this.crudManager,
                 initialized: this.crudManagerInitialized
             });
+            
+            // 即使初始化失敗也要關閉彈跳窗
+            const modal = event.target.closest('.modal');
+            if (modal) {
+                setTimeout(() => modal.remove(), 2000); // 2秒後自動關閉
+            }
             return;
         }
 
@@ -1364,10 +1413,22 @@ ${song.lyrics}
                 if (modal) modal.remove();
             } else {
                 this.showNotification(result.message, 'error');
+                
+                // 如果操作失敗，也要關閉彈跳窗
+                const modal = event.target.closest('.modal');
+                if (modal) {
+                    setTimeout(() => modal.remove(), 2000); // 2秒後自動關閉
+                }
             }
         } catch (error) {
             console.error('儲存訂閱時發生錯誤:', error);
             this.showNotification('儲存訂閱時發生錯誤', 'error');
+            
+            // 發生錯誤時也要關閉彈跳窗
+            const modal = event.target.closest('.modal');
+            if (modal) {
+                setTimeout(() => modal.remove(), 2000); // 2秒後自動關閉
+            }
         }
     }
 
@@ -1932,3 +1993,104 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('❌ 應用程式初始化失敗:', error);
     }
 });
+
+    // 顯示 CRUD 修復彈跳窗
+    showCRUDFixModal(type, itemId = null) {
+        const modal = document.createElement('div');
+        modal.className = 'modal show';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">🔧 系統修復</h3>
+                    <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ CRUD 管理器未初始化</strong><br>
+                        系統正在初始化中，請選擇以下選項：
+                    </div>
+                    
+                    <div class="fix-options" style="margin: 20px 0;">
+                        <button class="btn btn-primary" onclick="app.fixAndRetry('${type}', ${itemId})" style="margin: 5px;">
+                            🔄 修復並重試
+                        </button>
+                        <button class="btn btn-secondary" onclick="app.waitAndRetry('${type}', ${itemId})" style="margin: 5px;">
+                            ⏳ 等待並重試
+                        </button>
+                        <button class="btn btn-info" onclick="checkCRUDStatus()" style="margin: 5px;">
+                            📊 檢查狀態
+                        </button>
+                        <button class="btn btn-danger" onclick="this.closest('.modal').remove()" style="margin: 5px;">
+                            ❌ 取消操作
+                        </button>
+                    </div>
+                    
+                    <div class="fix-info" style="background: #f8f9fa; padding: 15px; border-radius: 4px; font-size: 0.9em;">
+                        <strong>說明：</strong><br>
+                        • 修復並重試：嘗試重新初始化 CRUD 管理器<br>
+                        • 等待並重試：等待 3 秒後重新嘗試<br>
+                        • 檢查狀態：在控制台查看詳細狀態<br>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // 修復並重試
+    async fixAndRetry(type, itemId) {
+        const modal = document.querySelector('.modal');
+        
+        try {
+            this.showNotification('正在修復 CRUD 管理器...', 'info');
+            
+            // 嘗試重新初始化
+            this.crudManagerInitialized = false;
+            await this.initCrudManager();
+            
+            if (this.crudManagerInitialized) {
+                this.showNotification('修復成功！', 'success');
+                
+                // 關閉修復彈跳窗
+                if (modal) modal.remove();
+                
+                // 重新顯示原始表單
+                if (type === 'subscription') {
+                    this.showSubscriptionForm(itemId);
+                } else if (type === 'food') {
+                    this.showFoodForm(itemId);
+                }
+            } else {
+                this.showNotification('修復失敗，請重新載入頁面', 'error');
+            }
+        } catch (error) {
+            console.error('修復過程中發生錯誤:', error);
+            this.showNotification('修復失敗，請重新載入頁面', 'error');
+        }
+    }
+
+    // 等待並重試
+    async waitAndRetry(type, itemId) {
+        const modal = document.querySelector('.modal');
+        
+        this.showNotification('等待系統初始化...', 'info');
+        
+        // 等待 3 秒
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        if (this.crudManagerInitialized) {
+            this.showNotification('系統已就緒！', 'success');
+            
+            // 關閉修復彈跳窗
+            if (modal) modal.remove();
+            
+            // 重新顯示原始表單
+            if (type === 'subscription') {
+                this.showSubscriptionForm(itemId);
+            } else if (type === 'food') {
+                this.showFoodForm(itemId);
+            }
+        } else {
+            this.showNotification('系統仍未就緒，請嘗試修復', 'warning');
+        }
+    }

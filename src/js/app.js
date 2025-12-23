@@ -1135,11 +1135,29 @@ class App {
         
         this.showModal('food-form-modal', `${isEdit ? '編輯' : '新增'}食品`, formContent);
         
-        // 綁定表單提交事件
-        document.getElementById('food-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveFoodForm(e, foodId);
-        });
+        // 延遲綁定表單提交事件，確保 DOM 已創建
+        setTimeout(() => {
+            const form = document.getElementById('food-form');
+            if (form) {
+                console.log('🔗 綁定食品表單提交事件');
+                
+                // 移除現有的事件監聽器（如果有的話）
+                const newForm = form.cloneNode(true);
+                form.parentNode.replaceChild(newForm, form);
+                
+                // 重新綁定事件
+                newForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📝 食品表單提交');
+                    this.saveFoodForm(e, foodId);
+                });
+                
+                console.log('✅ 食品表單事件已綁定');
+            } else {
+                console.error('❌ 找不到食品表單元素');
+            }
+        }, 100);
     }
 
     showSubscriptionForm(subscriptionId = null) {
@@ -1200,11 +1218,29 @@ class App {
         
         this.showModal('subscription-form-modal', `${isEdit ? '編輯' : '新增'}訂閱`, formContent);
         
-        // 綁定表單提交事件
-        document.getElementById('subscription-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            this.saveSubscriptionForm(e, subscriptionId);
-        });
+        // 延遲綁定表單提交事件，確保 DOM 已創建
+        setTimeout(() => {
+            const form = document.getElementById('subscription-form');
+            if (form) {
+                console.log('🔗 綁定訂閱表單提交事件');
+                
+                // 移除現有的事件監聽器（如果有的話）
+                const newForm = form.cloneNode(true);
+                form.parentNode.replaceChild(newForm, form);
+                
+                // 重新綁定事件
+                newForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    console.log('📝 訂閱表單提交');
+                    this.saveSubscriptionForm(e, subscriptionId);
+                });
+                
+                console.log('✅ 訂閱表單事件已綁定');
+            } else {
+                console.error('❌ 找不到訂閱表單元素');
+            }
+        }, 100);
     }
 
     async saveFoodForm(event, foodId = null) {
@@ -1568,9 +1604,12 @@ class App {
 
     // 模態框相關方法
     showModal(id, title, content) {
+        console.log('🔄 顯示模態框:', id);
+        
         // 移除現有的模態框
         const existingModal = document.getElementById(id);
         if (existingModal) {
+            console.log('移除現有模態框:', id);
             existingModal.remove();
         }
 
@@ -1594,25 +1633,59 @@ class App {
         // 顯示模態框
         setTimeout(() => {
             modal.classList.add('show');
+            console.log('✅ 模態框已顯示:', id);
         }, 10);
 
-        // 點擊背景關閉模態框
+        // 修復點擊背景關閉的邏輯
         modal.addEventListener('click', (e) => {
+            // 只有點擊模態框背景（不是內容區域）才關閉
             if (e.target === modal) {
+                console.log('🖱️ 點擊背景關閉模態框:', id);
                 this.closeModal(id);
             }
         });
+        
+        // 阻止模態框內容區域的點擊事件冒泡
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+        
+        // 添加 ESC 鍵關閉功能
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                console.log('⌨️ ESC 鍵關閉模態框:', id);
+                this.closeModal(id);
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+        
+        // 儲存 ESC 處理器以便清理
+        modal._escHandler = escHandler;
     }
 
     closeModal(id) {
+        console.log('🔄 關閉模態框:', id);
+        
         const modal = document.getElementById(id);
         if (modal) {
+            // 清理 ESC 事件監聽器
+            if (modal._escHandler) {
+                document.removeEventListener('keydown', modal._escHandler);
+            }
+            
             modal.classList.remove('show');
             setTimeout(() => {
                 if (modal.parentNode) {
                     modal.parentNode.removeChild(modal);
+                    console.log('✅ 模態框已移除:', id);
                 }
             }, 300);
+        } else {
+            console.warn('⚠️ 找不到要關閉的模態框:', id);
         }
     }
 

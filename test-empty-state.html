@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>空白狀態測試 - 鋒兄AI資訊系統</title>
+    <link rel="stylesheet" href="src/styles/components.css">
+    <style>
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .test-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .test-result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+        
+        .result-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .result-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .result-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .data-display {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 空白狀態測試</h1>
+        <p>此頁面用於測試系統啟動時是否正確顯示空白狀態，不包含任何預設測試數據。</p>
+        
+        <div class="test-section">
+            <h3>🍎 食品管理空白狀態測試</h3>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="testFoodEmptyState()">測試食品空白狀態</button>
+                <button class="btn btn-success" onclick="addTestFood()">添加測試食品</button>
+            </div>
+            <div id="food-result" class="test-result result-info" style="display: none;"></div>
+            <div id="food-data" class="data-display" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 訂閱管理空白狀態測試</h3>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="testSubscriptionEmptyState()">測試訂閱空白狀態</button>
+                <button class="btn btn-success" onclick="addTestSubscription()">添加測試訂閱</button>
+            </div>
+            <div id="subscription-result" class="test-result result-info" style="display: none;"></div>
+            <div id="subscription-data" class="data-display" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 系統初始化測試</h3>
+            <div class="test-buttons">
+                <button class="btn btn-primary" onclick="testSystemInit()">測試系統初始化</button>
+                <button class="btn btn-primary" onclick="testMockData()">測試 Mock 數據</button>
+            </div>
+            <div id="system-result" class="test-result result-info" style="display: none;"></div>
+            <div id="system-data" class="data-display" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 測試總結</h3>
+            <div id="summary" class="test-result result-info">
+                等待測試開始...
+            </div>
+        </div>
+    </div>
+
+    <!-- 載入必要的腳本 -->
+    <script src="contentful-config.js"></script>
+    <script src="src/js/contentfulManager.js"></script>
+    <script src="src/js/crudManager.js"></script>
+    <script src="src/js/components.js"></script>
+    <script src="src/js/app.js"></script>
+    
+    <script>
+        let testResults = {
+            foodEmpty: false,
+            subscriptionEmpty: false,
+            systemInit: false,
+            mockDataEmpty: false
+        };
+        
+        // 測試食品空白狀態
+        function testFoodEmptyState() {
+            const resultDiv = document.getElementById('food-result');
+            const dataDiv = document.getElementById('food-data');
+            
+            try {
+                if (window.app && window.app.crudManager) {
+                    const foods = window.app.crudManager.readAllFood();
+                    
+                    if (foods.length === 0) {
+                        resultDiv.textContent = '✅ 食品管理空白狀態正確 - 沒有預設數據';
+                        resultDiv.className = 'test-result result-success';
+                        testResults.foodEmpty = true;
+                    } else {
+                        resultDiv.textContent = `❌ 食品管理包含 ${foods.length} 項預設數據`;
+                        resultDiv.className = 'test-result result-error';
+                        dataDiv.textContent = JSON.stringify(foods, null, 2);
+                        dataDiv.style.display = 'block';
+                    }
+                } else {
+                    resultDiv.textContent = '⚠️ CRUD 管理器未初始化';
+                    resultDiv.className = 'test-result result-error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 測試失敗: ${error.message}`;
+                resultDiv.className = 'test-result result-error';
+            }
+            
+            resultDiv.style.display = 'block';
+            updateSummary();
+        }
+        
+        // 測試訂閱空白狀態
+        function testSubscriptionEmptyState() {
+            const resultDiv = document.getElementById('subscription-result');
+            const dataDiv = document.getElementById('subscription-data');
+            
+            try {
+                if (window.app && window.app.crudManager) {
+                    const subscriptions = window.app.crudManager.readAllSubscriptions();
+                    
+                    if (subscriptions.length === 0) {
+                        resultDiv.textContent = '✅ 訂閱管理空白狀態正確 - 沒有預設數據';
+                        resultDiv.className = 'test-result result-success';
+                        testResults.subscriptionEmpty = true;
+                    } else {
+                        resultDiv.textContent = `❌ 訂閱管理包含 ${subscriptions.length} 項預設數據`;
+                        resultDiv.className = 'test-result result-error';
+                        dataDiv.textContent = JSON.stringify(subscriptions, null, 2);
+                        dataDiv.style.display = 'block';
+                    }
+                } else {
+                    resultDiv.textContent = '⚠️ CRUD 管理器未初始化';
+                    resultDiv.className = 'test-result result-error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 測試失敗: ${error.message}`;
+                resultDiv.className = 'test-result result-error';
+            }
+            
+            resultDiv.style.display = 'block';
+            updateSummary();
+        }
+        
+        // 測試系統初始化
+        function testSystemInit() {
+            const resultDiv = document.getElementById('system-result');
+            const dataDiv = document.getElementById('system-data');
+            
+            try {
+                if (window.app) {
+                    const status = {
+                        appInitialized: !!window.app,
+                        crudManagerInitialized: window.app.crudManagerInitialized,
+                        contentfulManager: !!window.app.contentfulManager,
+                        currentPage: window.app.currentPage
+                    };
+                    
+                    if (status.appInitialized && status.crudManagerInitialized) {
+                        resultDiv.textContent = '✅ 系統初始化成功';
+                        resultDiv.className = 'test-result result-success';
+                        testResults.systemInit = true;
+                    } else {
+                        resultDiv.textContent = '❌ 系統初始化不完整';
+                        resultDiv.className = 'test-result result-error';
+                    }
+                    
+                    dataDiv.textContent = JSON.stringify(status, null, 2);
+                    dataDiv.style.display = 'block';
+                } else {
+                    resultDiv.textContent = '❌ 應用程式未初始化';
+                    resultDiv.className = 'test-result result-error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 測試失敗: ${error.message}`;
+                resultDiv.className = 'test-result result-error';
+            }
+            
+            resultDiv.style.display = 'block';
+            updateSummary();
+        }
+        
+        // 測試 Mock 數據
+        function testMockData() {
+            const resultDiv = document.getElementById('system-result');
+            const dataDiv = document.getElementById('system-data');
+            
+            try {
+                if (window.app && window.app.mockData) {
+                    const mockData = window.app.mockData;
+                    const isEmpty = mockData.food.length === 0 && mockData.subscriptions.length === 0;
+                    
+                    if (isEmpty) {
+                        resultDiv.textContent = '✅ Mock 數據為空白狀態';
+                        resultDiv.className = 'test-result result-success';
+                        testResults.mockDataEmpty = true;
+                    } else {
+                        resultDiv.textContent = `❌ Mock 數據包含預設內容 (食品: ${mockData.food.length}, 訂閱: ${mockData.subscriptions.length})`;
+                        resultDiv.className = 'test-result result-error';
+                    }
+                    
+                    dataDiv.textContent = JSON.stringify(mockData, null, 2);
+                    dataDiv.style.display = 'block';
+                } else {
+                    resultDiv.textContent = '⚠️ Mock 數據不存在';
+                    resultDiv.className = 'test-result result-error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 測試失敗: ${error.message}`;
+                resultDiv.className = 'test-result result-error';
+            }
+            
+            resultDiv.style.display = 'block';
+            updateSummary();
+        }
+        
+        // 添加測試食品
+        async function addTestFood() {
+            try {
+                if (window.app && window.app.crudManager) {
+                    const result = await window.app.crudManager.createFood({
+                        name: '測試食品',
+                        brand: '測試品牌',
+                        price: 'NT$ 100',
+                        expiry: '2025-12-31'
+                    });
+                    
+                    if (result.success) {
+                        alert('✅ 測試食品添加成功');
+                        testFoodEmptyState(); // 重新測試
+                    } else {
+                        alert('❌ 測試食品添加失敗');
+                    }
+                } else {
+                    alert('⚠️ CRUD 管理器未初始化');
+                }
+            } catch (error) {
+                alert(`❌ 添加失敗: ${error.message}`);
+            }
+        }
+        
+        // 添加測試訂閱
+        async function addTestSubscription() {
+            try {
+                if (window.app && window.app.crudManager) {
+                    const result = await window.app.crudManager.createSubscription({
+                        name: '測試訂閱',
+                        url: 'https://example.com',
+                        price: 'NT$ 200',
+                        nextPayment: '2025-12-31'
+                    });
+                    
+                    if (result.success) {
+                        alert('✅ 測試訂閱添加成功');
+                        testSubscriptionEmptyState(); // 重新測試
+                    } else {
+                        alert('❌ 測試訂閱添加失敗');
+                    }
+                } else {
+                    alert('⚠️ CRUD 管理器未初始化');
+                }
+            } catch (error) {
+                alert(`❌ 添加失敗: ${error.message}`);
+            }
+        }
+        
+        // 更新測試總結
+        function updateSummary() {
+            const summaryDiv = document.getElementById('summary');
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(result => result).length;
+            
+            if (passedTests === 0) {
+                summaryDiv.textContent = '等待測試開始...';
+                summaryDiv.className = 'test-result result-info';
+            } else if (passedTests === totalTests) {
+                summaryDiv.textContent = `🎉 所有測試通過 (${passedTests}/${totalTests}) - 系統空白狀態正確`;
+                summaryDiv.className = 'test-result result-success';
+            } else {
+                summaryDiv.textContent = `⚠️ 部分測試通過 (${passedTests}/${totalTests}) - 請檢查失敗的項目`;
+                summaryDiv.className = 'test-result result-error';
+            }
+        }
+        
+        // 頁面載入完成後自動測試
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                if (window.app) {
+                    console.log('🧪 開始自動測試空白狀態...');
+                    testSystemInit();
+                    testMockData();
+                    
+                    // 等待 CRUD 管理器初始化完成
+                    setTimeout(() => {
+                        testFoodEmptyState();
+                        testSubscriptionEmptyState();
+                    }, 1000);
+                } else {
+                    console.error('❌ 應用程式未載入');
+                }
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

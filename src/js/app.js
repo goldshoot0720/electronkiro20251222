@@ -238,48 +238,10 @@ class App {
     }
 
     loadInitialData() {
-        // 載入初始數據
+        // 初始化空的數據結構
         this.mockData = {
-            subscriptions: [
-                {
-                    id: 1,
-                    name: '天虎/黃信訊/心臟內科',
-                    url: 'https://www.tcmg.com.tw/index.php/main/schedule_time?id=18',
-                    price: 'NT$ 530',
-                    nextPayment: '2025-12-26',
-                    daysLeft: 4,
-                    status: '即將到期'
-                },
-                {
-                    id: 2,
-                    name: 'kiro pro',
-                    url: 'https://app.kiro.dev/account/',
-                    price: 'NT$ 640',
-                    nextPayment: '2026-01-01',
-                    daysLeft: 10,
-                    status: '活躍'
-                }
-            ],
-            food: [
-                {
-                    id: 1,
-                    name: '【張君雅】五香海苔休閒丸子',
-                    brand: '張君雅',
-                    price: 'NT$ 0',
-                    status: '未設定',
-                    expiry: '2026-01-06',
-                    daysLeft: 15
-                },
-                {
-                    id: 2,
-                    name: '【張君雅】日式串燒休閒丸子',
-                    brand: '張君雅',
-                    price: 'NT$ 0',
-                    status: '未設定',
-                    expiry: '2026-01-07',
-                    daysLeft: 16
-                }
-            ]
+            subscriptions: [],
+            food: []
         };
     }
 

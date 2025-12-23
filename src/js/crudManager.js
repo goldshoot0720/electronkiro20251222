@@ -496,38 +496,8 @@ class CrudManager {
 
     // 載入本地備用數據
     loadLocalFallbackData() {
-        // 載入一些示例數據
-        this.createFood({
-            name: '【張君雅】五香海苔休閒丸子',
-            brand: '張君雅',
-            price: 'NT$ 25',
-            status: '良好',
-            expiry: '2026-01-06'
-        });
-
-        this.createFood({
-            name: '【張君雅】日式串燒休閒丸子',
-            brand: '張君雅',
-            price: 'NT$ 25',
-            status: '良好',
-            expiry: '2026-01-07'
-        });
-
-        this.createSubscription({
-            name: '天虎/黃信訊/心臟內科',
-            url: 'https://www.tcmg.com.tw/index.php/main/schedule_time?id=18',
-            price: 'NT$ 530',
-            nextPayment: '2025-12-26'
-        });
-
-        this.createSubscription({
-            name: 'kiro pro',
-            url: 'https://app.kiro.dev/account/',
-            price: 'NT$ 640',
-            nextPayment: '2026-01-01'
-        });
-
-        console.log('✅ 本地備用數據載入完成');
+        // 不載入任何示例數據，保持空白狀態
+        console.log('✅ 系統已初始化，等待用戶添加數據');
     }
 
     // 獲取統計數據

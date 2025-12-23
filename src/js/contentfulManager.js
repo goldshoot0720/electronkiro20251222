@@ -314,68 +314,12 @@ class ContentfulManager {
 
     // 備用訂閱數據（當 Contentful 無法連接時）
     getFallbackSubscriptions() {
-        return [
-            {
-                id: 1,
-                name: '天虎/黃信訊/心臟內科',
-                url: 'https://www.tcmg.com.tw/index.php/main/schedule_time?id=18',
-                price: 'NT$ 530',
-                nextPayment: '2025-12-26',
-                daysLeft: 4,
-                status: '即將到期'
-            },
-            {
-                id: 2,
-                name: 'kiro pro',
-                url: 'https://app.kiro.dev/account/',
-                price: 'NT$ 640',
-                nextPayment: '2026-01-01',
-                daysLeft: 10,
-                status: '活躍'
-            },
-            {
-                id: 3,
-                name: 'Contentful CMS (備用數據)',
-                url: 'https://contentful.com',
-                price: 'NT$ 0',
-                nextPayment: '2025-12-31',
-                daysLeft: 9,
-                status: '活躍'
-            }
-        ];
+        return [];
     }
 
     // 備用食品數據（當 Contentful 無法連接時）
     getFallbackFoodItems() {
-        return [
-            {
-                id: 1,
-                name: '【張君雅】五香海苔休閒丸子',
-                brand: '張君雅',
-                price: 'NT$ 0',
-                status: '未設定',
-                expiry: '2026-01-06',
-                daysLeft: 15
-            },
-            {
-                id: 2,
-                name: '【張君雅】日式串燒休閒丸子',
-                brand: '張君雅',
-                price: 'NT$ 0',
-                status: '未設定',
-                expiry: '2026-01-07',
-                daysLeft: 16
-            },
-            {
-                id: 3,
-                name: 'Contentful 測試食品',
-                brand: 'CMS',
-                price: 'NT$ 0',
-                status: '良好',
-                expiry: '2025-12-31',
-                daysLeft: 9
-            }
-        ];
+        return [];
     }
 
     // 測試 Contentful 連接

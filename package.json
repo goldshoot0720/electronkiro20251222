@@ -1,19 +1,73 @@
 {
   "name": "electronkiro20251222",
+  "productName": "鋒兄AI資訊系統",
   "version": "1.0.0",
-  "description": "",
+  "description": "智能管理您的數位生活 - 集成食品管理、訂閱管理、媒體庫等功能的綜合資訊系統",
   "license": "ISC",
-  "author": "",
+  "author": "鋒兄達哥",
   "type": "commonjs",
   "main": "main.js",
+  "homepage": "https://github.com/goldshoot0720/electronkiro20251222",
   "scripts": {
     "start": "electron .",
     "dev": "electron . --dev",
     "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:win64": "electron-builder --win --x64",
+    "dist": "npm run build",
+    "pack": "electron-builder --dir",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "build": {
+    "appId": "com.fenggeda.electronkiro",
+    "productName": "鋒兄AI資訊系統",
+    "directories": {
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "src/**/*",
+      "assets/**/*",
+      "contentful-config.js",
+      "package.json",
+      "node_modules/**/*",
+      "!node_modules/.cache",
+      "!**/*.map",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}",
+      "!fix-modal-disappearing.js",
+      "!test-modal-fix.html",
+      "!**/*修復報告.md",
+      "!**/*說明.md",
+      "!test-*.js",
+      "!test-*.html",
+      "!build-app.js",
+      "!create-*.js"
+    ],
+    "win": {
+      "target": "dir",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "extraResources": [
+      {
+        "from": "assets",
+        "to": "assets"
+      }
+    ]
+  },
   "devDependencies": {
-    "electron": "^39.2.7"
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
+    "electron-packager": "^17.1.2"
   },
   "dependencies": {
     "contentful": "^11.10.1",
